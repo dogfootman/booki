@@ -1,168 +1,191 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Github, Copy, Sparkles } from 'lucide-react';
+import { CheckCircle, Github, Copy, Sparkles, Calendar, Users, Activity, BarChart3 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import axios from 'axios';
-
-const PACKAGE_NAME = '@easynext/cli';
-const CURRENT_VERSION = 'v0.1.35';
-
-function latestVersion(packageName: string) {
-  return axios
-    .get('https://registry.npmjs.org/' + packageName + '/latest')
-    .then((res) => res.data.version);
-}
+import { useAuthStore } from '@/lib/stores/auth-store';
+import { UserRole } from '@/types/user';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export default function Home() {
   const { toast } = useToast();
-  const [latest, setLatest] = useState<string | null>(null);
+  const { user, isAuthenticated } = useAuthStore();
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchLatestVersion = async () => {
-      try {
-        const version = await latestVersion(PACKAGE_NAME);
-        setLatest(`v${version}`);
-      } catch (error) {
-        console.error('Failed to fetch version info:', error);
-      }
-    };
-    fetchLatestVersion();
-  }, []);
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, router]);
 
-  const handleCopyCommand = () => {
-    navigator.clipboard.writeText(`npm install -g ${PACKAGE_NAME}@latest`);
-    toast({
-      description: 'Update command copied to clipboard',
-    });
-  };
+  if (isAuthenticated) {
+    return null; // Will redirect to dashboard
+  }
 
-  const needsUpdate = latest && latest !== CURRENT_VERSION;
+  const features = [
+    {
+      title: '에이전트 스케줄 관리',
+      description: 'AI 최적화로 예약 분산 및 과부하 방지',
+      icon: Users,
+      color: 'bg-blue-500',
+    },
+    {
+      title: '액티비티 예약 시스템',
+      description: '실시간 예약 관리 및 결제 연동',
+      icon: Activity,
+      color: 'bg-green-500',
+    },
+    {
+      title: 'SNS 자동 게시',
+      description: 'AI 문구 생성 및 자동 업로드',
+      icon: Calendar,
+      color: 'bg-purple-500',
+    },
+    {
+      title: '역할별 대시보드',
+      description: '관리자, 에이전시, 에이전트별 맞춤형 UI',
+      icon: BarChart3,
+      color: 'bg-orange-500',
+    },
+  ];
 
-  return (
-    <div className="flex min-h-screen relative overflow-hidden">
-      {/* Main Content */}
-      <div className="min-h-screen flex bg-gray-100">
-        <div className="flex flex-col p-5 md:p-8 space-y-4">
-          <h1 className="text-3xl md:text-5xl font-semibold tracking-tighter !leading-tight text-left">
-            Easiest way to start
-            <br /> Next.js project
-            <br /> with Cursor
-          </h1>
-
-          <p className="text-lg text-muted-foreground">
-            Get Pro-created Next.js bootstrap just in seconds
-          </p>
-
-          <div className="flex items-center gap-2">
-            <Button
-              asChild
-              size="lg"
-              variant="secondary"
-              className="gap-2 w-fit rounded-full px-4 py-2 border border-black"
-            >
-              <a href="https://github.com/easynextjs/easynext" target="_blank">
-                <Github className="w-4 h-4" />
-                GitHub
-              </a>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="secondary"
-              className="gap-2 w-fit rounded-full px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white"
-            >
-              <a href="https://easynext.org/premium" target="_blank">
-                <Sparkles className="w-4 h-4" />
-                Premium
-              </a>
-            </Button>
-          </div>
-          <Section />
-        </div>
-      </div>
-
-      <div className="min-h-screen ml-16 flex-1 flex flex-col items-center justify-center space-y-4">
-        <div className="flex flex-col items-center space-y-2">
-          <p className="text-muted-foreground">
-            Current Version: {CURRENT_VERSION}
-          </p>
-          <p className="text-muted-foreground">
-            Latest Version:{' '}
-            <span className="font-bold">{latest || 'Loading...'}</span>
-          </p>
-        </div>
-
-        {needsUpdate && (
-          <div className="flex flex-col items-center space-y-2">
-            <p className="text-yellow-600">New version available!</p>
-            <p className="text-sm text-muted-foreground">
-              Copy and run the command below to update:
-            </p>
-            <div className="relative group">
-              <pre className="bg-gray-100 p-4 rounded-lg">
-                npm install -g {PACKAGE_NAME}@latest
-              </pre>
-              <button
-                onClick={handleCopyCommand}
-                className="absolute top-2 right-2 p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Copy className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Section() {
-  const items = [
-    { href: 'https://nextjs.org/', label: 'Next.js' },
-    { href: 'https://ui.shadcn.com/', label: 'shadcn/ui' },
-    { href: 'https://tailwindcss.com/', label: 'Tailwind CSS' },
-    { href: 'https://www.framer.com/motion/', label: 'framer-motion' },
-    { href: 'https://zod.dev/', label: 'zod' },
-    { href: 'https://date-fns.org/', label: 'date-fns' },
-    { href: 'https://ts-pattern.dev/', label: 'ts-pattern' },
-    { href: 'https://es-toolkit.dev/', label: 'es-toolkit' },
-    { href: 'https://zustand.docs.pmnd.rs/', label: 'zustand' },
-    { href: 'https://supabase.com/', label: 'supabase' },
-    { href: 'https://react-hook-form.com/', label: 'react-hook-form' },
+  const roles = [
+    {
+      role: UserRole.ADMIN,
+      title: '시스템 관리자',
+      description: '전체 시스템 관리 및 모니터링',
+      features: ['에이전시 관리', '시스템 통계', '사용자 권한 관리'],
+      color: 'bg-red-500',
+    },
+    {
+      role: UserRole.AGENCY_MANAGER,
+      title: '에이전시 매니저',
+      description: '에이전시 운영 및 에이전트 관리',
+      features: ['에이전트 관리', '액티비티 관리', '스케줄 관리'],
+      color: 'bg-blue-500',
+    },
+    {
+      role: UserRole.AGENT,
+      title: '에이전트',
+      description: '고객 상담 및 액티비티 가이드',
+      features: ['스케줄 확인', '고객 관리', '액티비티 정보'],
+      color: 'bg-green-500',
+    },
   ];
 
   return (
-    <div className="flex flex-col py-5 md:py-8 space-y-2 opacity-75">
-      <p className="font-semibold">What&apos;s Included</p>
-
-      <div className="flex flex-col space-y-1 text-muted-foreground">
-        {items.map((item) => (
-          <SectionItem key={item.href} href={item.href}>
-            {item.label}
-          </SectionItem>
-        ))}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Hero Section */}
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+          하와이 액티비티 여행사
+          <br />
+          <span className="text-blue-600">운영 플랫폼</span>
+        </h1>
+        <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+          AI 최적화 스케줄링, 자동 SNS 게시, 역할별 맞춤형 대시보드로 
+          하와이 액티비티 여행사의 운영 효율성을 극대화하세요.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button size="lg" onClick={() => router.push('/login')}>
+            데모 시작하기
+          </Button>
+          <Button variant="outline" size="lg">
+            자세히 보기
+          </Button>
+        </div>
       </div>
-    </div>
-  );
-}
 
-function SectionItem({
-  children,
-  href,
-}: {
-  children: React.ReactNode;
-  href: string;
-}) {
-  return (
-    <a
-      href={href}
-      className="flex items-center gap-2 underline"
-      target="_blank"
-    >
-      <CheckCircle className="w-4 h-4" />
-      <p>{children}</p>
-    </a>
+      {/* Features Section */}
+      <div className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+          주요 기능
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((feature, index) => {
+            const IconComponent = feature.icon;
+            return (
+              <Card key={index} className="text-center">
+                <CardHeader>
+                  <div className={`w-16 h-16 rounded-full ${feature.color} flex items-center justify-center mx-auto mb-4`}>
+                    <IconComponent className="h-8 w-8 text-white" />
+                  </div>
+                  <CardTitle className="text-lg">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription>{feature.description}</CardDescription>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Roles Section */}
+      <div className="container mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+          역할별 맞춤형 기능
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {roles.map((role, index) => (
+            <Card key={index} className="relative overflow-hidden">
+              <div className={`${role.color} h-2`} />
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Badge variant="secondary">
+                    {role.role === UserRole.ADMIN && '관리자'}
+                    {role.role === UserRole.AGENCY_MANAGER && '에이전시 매니저'}
+                    {role.role === UserRole.AGENT && '에이전트'}
+                  </Badge>
+                  {role.title}
+                </CardTitle>
+                <CardDescription>{role.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {role.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="container mx-auto px-4 py-16 text-center">
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle className="text-2xl">지금 시작하세요</CardTitle>
+            <CardDescription>
+              하와이 액티비티 여행사의 운영을 혁신하세요
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button size="lg" onClick={() => router.push('/login')}>
+              무료 데모 시작
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-lg font-semibold mb-2">Bookie</p>
+          <p className="text-gray-400">
+            © 2024 Bookie. 하와이 액티비티 여행사 운영 플랫폼
+          </p>
+        </div>
+      </footer>
+    </div>
   );
 }
