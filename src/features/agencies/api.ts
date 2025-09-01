@@ -14,7 +14,9 @@ export const agenciesApi = {
     
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
-    if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString());
+    if (params?.is_active !== undefined && params.is_active !== null) {
+      searchParams.append('is_active', params.is_active.toString());
+    }
     if (params?.search) searchParams.append('search', params.search);
 
     const response = await fetch(`${API_BASE}?${searchParams.toString()}`);

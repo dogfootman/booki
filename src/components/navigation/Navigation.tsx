@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Calendar, Users, Activity, Home, BarChart3, LogOut, User } from 'lucide-react';
+import { Calendar, Users, Activity, Home, BarChart3, LogOut, User, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/types/user';
@@ -22,6 +22,7 @@ const getNavigationItems = (role: UserRole) => {
       return [
         ...baseItems,
         { href: '/dashboard', label: '대시보드', icon: BarChart3 },
+        { href: '/agencies', label: '에이전시 관리', icon: Building2 },
         { href: '/agents', label: '에이전트 관리', icon: Users },
         { href: '/activities', label: '액티비티 관리', icon: Activity },
         { href: '/calendar', label: '전체 스케줄', icon: Calendar },
@@ -31,6 +32,7 @@ const getNavigationItems = (role: UserRole) => {
       return [
         ...baseItems,
         { href: '/dashboard', label: '대시보드', icon: BarChart3 },
+        { href: '/agencies', label: '에이전시 관리', icon: Building2 },
         { href: '/agents', label: '에이전트 관리', icon: Users },
         { href: '/activities', label: '액티비티 관리', icon: Activity },
         { href: '/calendar', label: '스케줄 관리', icon: Calendar },

@@ -9,6 +9,7 @@ export const agentsApi = {
     limit?: number;
     is_active?: boolean | null;
     search?: string;
+    agencyId?: string;
   }): Promise<AgentsResponse> {
     const searchParams = new URLSearchParams();
     
@@ -18,6 +19,7 @@ export const agentsApi = {
       searchParams.append('is_active', params.is_active.toString());
     }
     if (params?.search) searchParams.append('search', params.search);
+    if (params?.agencyId) searchParams.append('agency_id', params.agencyId);
 
     const response = await fetch(`${API_BASE}?${searchParams.toString()}`);
     return response.json();

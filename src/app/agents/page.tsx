@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search, Users, Mail, Phone, Clock, DollarSign, UserPlus } from 'lucide-react';
+import { Plus, Search, Users, Mail, Phone, Clock, DollarSign, UserPlus, Edit, Trash2 } from 'lucide-react';
 import { AdminOrAgencyManager } from '@/components/auth/RoleGuard';
 
 export default function AgentsPage() {
@@ -63,6 +63,33 @@ export default function AgentsPage() {
       setFilterActive(true);
     } else {
       setFilterActive(false);
+    }
+  };
+
+  const handleDeleteAgent = async (agentId: string, agentName: string) => {
+    if (!confirm(`정말로 "${agentName}" 에이전트를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+      return;
+    }
+
+    try {
+      const response = await agentsApi.deleteAgent(agentId);
+      
+      if (response.success) {
+        toast({
+          title: '성공',
+          description: '에이전트가 성공적으로 삭제되었습니다.',
+        });
+        loadAgents(); // 목록 새로고침
+      } else {
+        throw new Error(response.error || '에이전트 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Failed to delete agent:', error);
+      toast({
+        title: '에러',
+        description: error instanceof Error ? error.message : '에이전트 삭제에 실패했습니다.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -263,6 +290,27 @@ export default function AgentsPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* 액션 버튼 */}
+                  <div className="flex justify-end gap-2 pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/agents/${agent.id}/edit`)}
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
+                      수정
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteAgent(agent.id, agent.name)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      삭제
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
