@@ -147,6 +147,18 @@ export default function CalendarPage() {
         if (!response.ok) {
           // 서버에서 온 구체적인 오류 메시지 사용
           const errorMessage = result.error || 'Failed to create booking';
+          
+          // 불가 날짜 관련 에러인지 확인
+          if (errorMessage.includes('예약 불가 날짜') || errorMessage.includes('운영 중단일')) {
+            // 사용자 친화적인 알림 표시
+            toast({
+              title: '예약 불가 날짜',
+              description: errorMessage,
+              variant: 'destructive',
+            });
+            return; // 에러를 다시 throw하지 않음
+          }
+          
           throw new Error(errorMessage);
         }
         

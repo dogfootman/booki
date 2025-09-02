@@ -48,10 +48,23 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const bookingDate = new Date(body.start_time).toISOString().split('T')[0];
+
+      // Check agent unavailable dates
+      const isAgentDateUnavailable = memoryDataStore.isAgentDateUnavailable(body.agent_id, bookingDate);
+      if (isAgentDateUnavailable) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: `예약 불가 날짜입니다. ${bookingDate}는 해당 에이전트(${agent.name})의 휴무일입니다.`,
+            validation_type: 'agent_unavailable_date'
+          },
+          { status: 400 }
+        );
+      }
+
       // Check agency unavailable dates
       if (agent.agency_id) {
-        const bookingDate = new Date(body.start_time).toISOString().split('T')[0];
-        
         const isDateUnavailable = memoryDataStore.isAgencyDateUnavailable(agent.agency_id, bookingDate);
         if (isDateUnavailable) {
           return NextResponse.json(

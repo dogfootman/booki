@@ -128,15 +128,50 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
   const handleFormSubmit = async (data: any) => {
     try {
+      // 불가 날짜 사전 체크
+      if (selectedActivity && selectedDate) {
+        const bookingDate = format(selectedDate, 'yyyy-MM-dd');
+        
+        // 액티비티 불가 날짜 체크
+        if (selectedActivity.unavailable_dates?.includes(bookingDate)) {
+          toast({
+            title: '예약 불가 날짜',
+            description: `${bookingDate}는 해당 액티비티의 운영 중단일입니다. 다른 날짜를 선택해주세요.`,
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // 에이전트 불가 날짜 체크
+        if (selectedAgent && selectedAgent.unavailable_dates?.includes(bookingDate)) {
+          toast({
+            title: '예약 불가 날짜',
+            description: `${bookingDate}는 선택된 에이전트(${selectedAgent.name})의 휴무일입니다. 다른 날짜나 다른 에이전트를 선택해주세요.`,
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+      
       await onSubmit(data as CreateBookingRequest);
     } catch (error) {
       console.error('Failed to submit booking:', error);
       const errorMessage = error instanceof Error ? error.message : '예약 생성에 실패했습니다.';
-      toast({
-        title: '예약 실패',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      
+      // 불가 날짜 관련 에러인지 확인
+      if (errorMessage.includes('예약 불가 날짜') || errorMessage.includes('운영 중단일')) {
+        toast({
+          title: '예약 불가 날짜',
+          description: errorMessage + ' 다른 날짜를 선택해주세요.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: '예약 실패',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      }
     }
   };
 
@@ -198,13 +233,20 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     return operatingDays;
   };
 
-  // Check if all required fields are filled
+  // Check if selected date is unavailable
+  const isDateUnavailable = selectedDate && (
+    (selectedActivity && selectedActivity.unavailable_dates?.includes(format(selectedDate, 'yyyy-MM-dd'))) ||
+    (selectedAgent && selectedAgent.unavailable_dates?.includes(format(selectedDate, 'yyyy-MM-dd')))
+  );
+
+  // Check if all required fields are filled and date is available
   const isFormValid = watchedActivityId && 
                      watchedStartTime && 
                      watchedEndTime && 
                      watchedCustomerName && 
                      watchedCustomerEmail && 
-                     watchedParticipants > 0;
+                     watchedParticipants > 0 &&
+                     !isDateUnavailable;
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
@@ -286,6 +328,46 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           />
           {errors.start_time && (
             <p className="text-sm text-red-600">{errors.start_time.message}</p>
+          )}
+          
+          {/* 액티비티 불가 날짜 안내 */}
+          {selectedDate && selectedActivity && selectedActivity.unavailable_dates?.includes(format(selectedDate, 'yyyy-MM-dd')) && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center space-x-2 text-red-800">
+                <span className="text-sm font-medium">⚠️ 액티비티 운영 중단일</span>
+              </div>
+              <p className="text-sm text-red-700 mt-1">
+                선택하신 날짜는 해당 액티비티의 운영 중단일입니다. 다른 날짜를 선택해주세요.
+              </p>
+            </div>
+          )}
+
+          {/* 에이전트 불가 날짜 안내 */}
+          {selectedDate && selectedAgent && selectedAgent.unavailable_dates?.includes(format(selectedDate, 'yyyy-MM-dd')) && (
+            <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-center space-x-2 text-orange-800">
+                <span className="text-sm font-medium">⚠️ 에이전트 휴무일</span>
+              </div>
+              <p className="text-sm text-orange-700 mt-1">
+                선택하신 날짜는 {selectedAgent.name} 에이전트의 휴무일입니다. 다른 날짜나 다른 에이전트를 선택해주세요.
+              </p>
+            </div>
+          )}
+          
+          {/* 액티비티 불가 날짜 목록 표시 */}
+          {selectedActivity && selectedActivity.unavailable_dates && selectedActivity.unavailable_dates.length > 0 && (
+            <div className="text-xs text-gray-500">
+              <span className="font-medium">액티비티 운영 중단일:</span> {selectedActivity.unavailable_dates.slice(0, 3).join(', ')}
+              {selectedActivity.unavailable_dates.length > 3 && ` 외 ${selectedActivity.unavailable_dates.length - 3}일`}
+            </div>
+          )}
+
+          {/* 에이전트 불가 날짜 목록 표시 */}
+          {selectedAgent && selectedAgent.unavailable_dates && selectedAgent.unavailable_dates.length > 0 && (
+            <div className="text-xs text-gray-500">
+              <span className="font-medium">{selectedAgent.name} 에이전트 휴무일:</span> {selectedAgent.unavailable_dates.slice(0, 3).join(', ')}
+              {selectedAgent.unavailable_dates.length > 3 && ` 외 ${selectedAgent.unavailable_dates.length - 3}일`}
+            </div>
           )}
         </div>
 

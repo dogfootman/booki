@@ -88,21 +88,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check agency unavailable dates if agent is specified
+    // Check agent and agency unavailable dates if agent is specified
     if (body.agent_id) {
       const agent = memoryDataStore.getAgentById(body.agent_id);
-      if (agent && agent.agency_id) {
+      if (agent) {
         const bookingDate = new Date(body.start_time).toISOString().split('T')[0];
         
-        const isDateUnavailable = memoryDataStore.isAgencyDateUnavailable(agent.agency_id, bookingDate);
-        if (isDateUnavailable) {
+        // Check agent unavailable dates
+        const isAgentDateUnavailable = memoryDataStore.isAgentDateUnavailable(body.agent_id, bookingDate);
+        if (isAgentDateUnavailable) {
           return NextResponse.json(
             { 
               success: false, 
-              error: `예약 불가 날짜입니다. ${bookingDate}는 해당 에이전시의 운영 중단일입니다.`
+              error: `예약 불가 날짜입니다. ${bookingDate}는 해당 에이전트(${agent.name})의 휴무일입니다.`
             },
             { status: 400 }
           );
+        }
+
+        // Check agency unavailable dates
+        if (agent.agency_id) {
+          const isDateUnavailable = memoryDataStore.isAgencyDateUnavailable(agent.agency_id, bookingDate);
+          if (isDateUnavailable) {
+            return NextResponse.json(
+              { 
+                success: false, 
+                error: `예약 불가 날짜입니다. ${bookingDate}는 해당 에이전시의 운영 중단일입니다.`
+              },
+              { status: 400 }
+            );
+          }
         }
       }
     }

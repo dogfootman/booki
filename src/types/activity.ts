@@ -47,6 +47,7 @@ export interface Activity {
   tags: string[];
   daily_schedules: DailySchedule[]; // Available time slots for each day
   activity_slots: ActivitySlot[]; // New: specific time slots for the activity
+  unavailable_dates: string[]; // Array of unavailable dates in YYYY-MM-DD format
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -68,6 +69,7 @@ export interface CreateActivityRequest {
   tags?: string[];
   daily_schedules?: DailySchedule[];
   activity_slots?: ActivitySlot[]; // New: specific time slots for the activity
+  unavailable_dates?: string[]; // Array of unavailable dates in YYYY-MM-DD format
 }
 
 // Update activity request interface
@@ -75,6 +77,7 @@ export interface UpdateActivityRequest extends Partial<CreateActivityRequest> {
   is_active?: boolean;
   daily_schedules?: DailySchedule[];
   activity_slots?: ActivitySlot[]; // New: specific time slots for the activity
+  unavailable_dates?: string[]; // Array of unavailable dates in YYYY-MM-DD format
 }
 
 // Zod schemas for validation
@@ -112,6 +115,11 @@ export const dailyScheduleSchema = z.object({
   time_slots: z.array(timeSlotSchema).optional(),
 });
 
+// Unavailable dates schema
+export const unavailableDatesSchema = z.array(
+  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format. Use YYYY-MM-DD')
+).default([]);
+
 export const createActivitySchema = z.object({
   title_en: z.string().min(1, 'English title is required').max(255, 'Title too long'),
   title_ko: z.string().max(255, 'Korean title too long').optional(),
@@ -127,6 +135,7 @@ export const createActivitySchema = z.object({
   tags: z.array(z.string()).default([]),
   daily_schedules: z.array(dailyScheduleSchema).default([]),
   activity_slots: z.array(activitySlotSchema).default([]), // New: activity slots
+  unavailable_dates: unavailableDatesSchema, // New: unavailable dates validation
 }).refine((data) => {
   if (data.min_participants && data.max_participants) {
     return data.min_participants <= data.max_participants;
@@ -152,6 +161,7 @@ export const updateActivitySchema = z.object({
   tags: z.array(z.string()).default([]).optional(),
   daily_schedules: z.array(dailyScheduleSchema).optional(),
   activity_slots: z.array(activitySlotSchema).optional(), // New: activity slots
+  unavailable_dates: unavailableDatesSchema.optional(), // New: unavailable dates validation
   is_active: z.boolean().optional(),
 });
 

@@ -16,6 +16,13 @@ export const mockAgents: Agent[] = [
     max_hours_per_day: 8,
     is_active: true,
     agency_id: 'agency-001', // 소속 에이전시 ID 추가
+    unavailable_dates: [
+      '2025-01-01', // New Year's Day
+      '2025-02-14', // Personal leave
+      '2025-07-04', // Independence Day
+      '2025-12-25', // Christmas Day
+      '2025-03-15', // Medical appointment
+    ],
     created_at: '2025-08-30T05:00:00.000Z',
     updated_at: '2025-08-30T05:00:00.000Z',
   },
@@ -32,6 +39,12 @@ export const mockAgents: Agent[] = [
     max_hours_per_day: 6,
     is_active: true,
     agency_id: 'agency-002', // 소속 에이전시 ID 추가
+    unavailable_dates: [
+      '2025-01-01', // New Year's Day
+      '2025-05-20', // Family vacation
+      '2025-08-10', // Certification renewal
+      '2025-12-25', // Christmas Day
+    ],
     created_at: '2025-08-30T06:00:00.000Z',
     updated_at: '2025-08-30T06:00:00.000Z',
   },
@@ -48,6 +61,13 @@ export const mockAgents: Agent[] = [
     max_hours_per_day: 8,
     is_active: true,
     agency_id: 'agency-003', // 소속 에이전시 ID 추가
+    unavailable_dates: [
+      '2025-01-01', // New Year's Day
+      '2025-04-15', // Equipment training
+      '2025-06-30', // Safety certification
+      '2025-09-05', // Personal leave
+      '2025-12-25', // Christmas Day
+    ],
     created_at: '2025-08-30T07:00:00.000Z',
     updated_at: '2025-08-30T07:00:00.000Z',
   },
@@ -124,6 +144,13 @@ export const mockActivities: Activity[] = [
         ]
       },
     ],
+    unavailable_dates: [
+      '2025-01-01', // New Year's Day
+      '2025-07-04', // Independence Day  
+      '2025-12-25', // Christmas Day
+      '2025-02-15', // Equipment maintenance
+      '2025-06-20', // Weather restriction
+    ],
     is_active: true,
     created_at: '2025-08-30T08:00:00.000Z',
     updated_at: '2025-08-30T08:00:00.000Z',
@@ -189,6 +216,13 @@ export const mockActivities: Activity[] = [
           { id: '2-7', start_time: '08:00', end_time: '12:00', is_available: true, max_capacity: 8, current_bookings: 6 },
         ]
       },
+    ],
+    unavailable_dates: [
+      '2025-01-01', // New Year's Day
+      '2025-03-20', // Volcanic activity assessment
+      '2025-08-10', // Guide training
+      '2025-12-25', // Christmas Day
+      '2025-09-15', // Equipment inspection
     ],
     is_active: true,
     created_at: '2025-08-30T09:00:00.000Z',
@@ -263,6 +297,13 @@ export const mockActivities: Activity[] = [
         ]
       },
     ],
+    unavailable_dates: [
+      '2025-01-01', // New Year's Day
+      '2025-02-14', // Equipment maintenance  
+      '2025-06-15', // Staff training
+      '2025-09-22', // Hurricane season precaution
+      '2025-11-28', // Thanksgiving Day
+    ],
     is_active: true,
     created_at: '2025-08-30T10:00:00.000Z',
     updated_at: '2025-08-30T10:00:00.000Z',
@@ -328,6 +369,13 @@ export const mockActivities: Activity[] = [
           { id: '4-7', start_time: '18:00', end_time: '21:00', is_available: true, max_capacity: 50, current_bookings: 42 },
         ]
       },
+    ],
+    unavailable_dates: [
+      '2025-01-01', // New Year's Day
+      '2025-07-04', // Independence Day
+      '2025-12-25', // Christmas Day
+      '2025-04-10', // Cultural center maintenance
+      '2025-10-31', // Halloween event conflict
     ],
     is_active: true,
     created_at: '2025-08-30T11:00:00.000Z',
@@ -424,6 +472,13 @@ export const mockActivities: Activity[] = [
         ]
       },
     ],
+    unavailable_dates: [
+      '2025-01-01', // New Year's Day
+      '2025-07-04', // Independence Day
+      '2025-12-25', // Christmas Day
+      '2025-05-25', // Beach maintenance
+      '2025-08-15', // High surf warning
+    ],
     is_active: true,
     created_at: '2025-08-30T12:00:00.000Z',
     updated_at: '2025-08-30T12:00:00.000Z',
@@ -496,6 +551,13 @@ export const mockActivities: Activity[] = [
           { id: '6-14', start_time: '14:00', end_time: '15:00', is_available: true, max_capacity: 4, current_bookings: 4 },
         ]
       },
+    ],
+    unavailable_dates: [
+      '2025-01-01', // New Year's Day
+      '2025-07-04', // Independence Day
+      '2025-12-25', // Christmas Day
+      '2025-03-01', // Aircraft maintenance
+      '2025-11-15', // Weather restriction - winter storms
     ],
     is_active: true,
     created_at: '2025-08-30T13:00:00.000Z',

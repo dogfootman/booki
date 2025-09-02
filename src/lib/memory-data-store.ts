@@ -125,6 +125,7 @@ export class MemoryDataStore {
     const newAgent: Agent = {
       ...agentData,
       id,
+      unavailable_dates: agentData.unavailable_dates || [],
       created_at: now,
       updated_at: now,
     };
@@ -254,6 +255,92 @@ export class MemoryDataStore {
    */
   public deleteActivity(id: string): boolean {
     return this.activities.delete(id);
+  }
+
+  /**
+   * Get activity unavailable dates
+   * 액티비티의 불가 날짜들을 가져옵니다
+   */
+  public getActivityUnavailableDates(activityId: string): string[] {
+    const activity = this.getActivityById(activityId);
+    return activity?.unavailable_dates || [];
+  }
+
+  /**
+   * Add unavailable date to activity
+   * 액티비티에 불가 날짜를 추가합니다
+   */
+  public addActivityUnavailableDate(activityId: string, date: string): boolean {
+    const activity = this.getActivityById(activityId);
+    if (!activity) return false;
+
+    // Validate date format
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(date)) {
+      throw new Error('Invalid date format. Use YYYY-MM-DD');
+    }
+
+    // Check if date already exists
+    if (activity.unavailable_dates?.includes(date)) {
+      throw new Error('Date is already in unavailable dates list');
+    }
+
+    // Add the date
+    const updatedUnavailableDates = [...(activity.unavailable_dates || []), date].sort();
+    
+    this.updateActivity(activityId, { unavailable_dates: updatedUnavailableDates });
+    return true;
+  }
+
+  /**
+   * Remove unavailable date from activity
+   * 액티비티에서 불가 날짜를 제거합니다
+   */
+  public removeActivityUnavailableDate(activityId: string, date: string): boolean {
+    const activity = this.getActivityById(activityId);
+    if (!activity) return false;
+
+    if (!activity.unavailable_dates?.includes(date)) {
+      throw new Error('Date is not in unavailable dates list');
+    }
+
+    // Remove the date
+    const updatedUnavailableDates = activity.unavailable_dates.filter(d => d !== date);
+    
+    this.updateActivity(activityId, { unavailable_dates: updatedUnavailableDates });
+    return true;
+  }
+
+  /**
+   * Set activity unavailable dates (replace all)
+   * 액티비티의 불가 날짜들을 설정합니다 (전체 교체)
+   */
+  public setActivityUnavailableDates(activityId: string, dates: string[]): boolean {
+    const activity = this.getActivityById(activityId);
+    if (!activity) return false;
+
+    // Validate date formats
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    for (const date of dates) {
+      if (!dateRegex.test(date)) {
+        throw new Error(`Invalid date format: ${date}. Use YYYY-MM-DD`);
+      }
+    }
+
+    // Remove duplicates and sort
+    const uniqueSortedDates = [...new Set(dates)].sort();
+    
+    this.updateActivity(activityId, { unavailable_dates: uniqueSortedDates });
+    return true;
+  }
+
+  /**
+   * Check if a specific date is unavailable for activity
+   * 특정 날짜가 액티비티의 불가 날짜인지 확인합니다
+   */
+  public isActivityDateUnavailable(activityId: string, date: string): boolean {
+    const activity = this.getActivityById(activityId);
+    return activity?.unavailable_dates?.includes(date) || false;
   }
   
   // Booking CRUD operations
@@ -729,6 +816,15 @@ export class MemoryDataStore {
       };
     }
 
+    // Check if the booking date is in activity's unavailable dates
+    const bookingDate = new Date(startTime).toISOString().split('T')[0];
+    if (activity.unavailable_dates?.includes(bookingDate)) {
+      return {
+        isValid: false,
+        error: `예약 불가 날짜입니다. ${bookingDate}는 해당 액티비티의 운영 중단일입니다.`,
+      };
+    }
+
     // Check activity participant limits
     if (participants > activity.max_participants) {
       return {
@@ -863,6 +959,11 @@ export class MemoryDataStore {
     const activity = this.getActivityById(activityId);
     if (!activity) return [];
 
+    // Check if the date is in the activity's unavailable dates list
+    if (activity.unavailable_dates?.includes(date)) {
+      return []; // Return empty array if the date is unavailable
+    }
+
     const dateObj = new Date(date);
     const dayOfWeek = dateObj.getDay();
 
@@ -941,6 +1042,84 @@ export class MemoryDataStore {
     const end2Total = end2Hours * 60 + end2Minutes;
 
     return start1Total < end2Total && start2Total < end1Total;
+  }
+
+  // Agent unavailable dates management methods
+  /**
+   * Get agent unavailable dates
+   * 에이전트 불가 날짜 목록을 가져옵니다
+   */
+  public getAgentUnavailableDates(agentId: string): string[] {
+    const agent = this.getAgentById(agentId);
+    return agent?.unavailable_dates || [];
+  }
+
+  /**
+   * Add agent unavailable date
+   * 에이전트 불가 날짜를 추가합니다
+   */
+  public addAgentUnavailableDate(agentId: string, date: string): boolean {
+    const agent = this.getAgentById(agentId);
+    if (!agent) return false;
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(date)) {
+      throw new Error('Invalid date format. Use YYYY-MM-DD');
+    }
+
+    if (agent.unavailable_dates?.includes(date)) {
+      throw new Error('Date is already in unavailable dates list');
+    }
+
+    const updatedUnavailableDates = [...(agent.unavailable_dates || []), date].sort();
+    this.updateAgent(agentId, { unavailable_dates: updatedUnavailableDates });
+    return true;
+  }
+
+  /**
+   * Remove agent unavailable date
+   * 에이전트 불가 날짜를 제거합니다
+   */
+  public removeAgentUnavailableDate(agentId: string, date: string): boolean {
+    const agent = this.getAgentById(agentId);
+    if (!agent) return false;
+
+    if (!agent.unavailable_dates?.includes(date)) {
+      throw new Error('Date is not in unavailable dates list');
+    }
+
+    const updatedUnavailableDates = agent.unavailable_dates.filter(d => d !== date);
+    this.updateAgent(agentId, { unavailable_dates: updatedUnavailableDates });
+    return true;
+  }
+
+  /**
+   * Set agent unavailable dates (replace all)
+   * 에이전트 불가 날짜를 설정합니다 (전체 교체)
+   */
+  public setAgentUnavailableDates(agentId: string, dates: string[]): boolean {
+    const agent = this.getAgentById(agentId);
+    if (!agent) return false;
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    for (const date of dates) {
+      if (!dateRegex.test(date)) {
+        throw new Error(`Invalid date format: ${date}. Use YYYY-MM-DD`);
+      }
+    }
+
+    const uniqueSortedDates = [...new Set(dates)].sort();
+    this.updateAgent(agentId, { unavailable_dates: uniqueSortedDates });
+    return true;
+  }
+
+  /**
+   * Check if agent is unavailable on specific date
+   * 특정 날짜에 에이전트가 불가한지 확인합니다
+   */
+  public isAgentDateUnavailable(agentId: string, date: string): boolean {
+    const agent = this.getAgentById(agentId);
+    return agent?.unavailable_dates?.includes(date) || false;
   }
 
   /**

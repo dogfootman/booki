@@ -109,6 +109,7 @@ export async function POST(request: NextRequest) {
       tags: body.tags || [],
       daily_schedules: body.daily_schedules || [],
       activity_slots: body.activity_slots || [],
+      unavailable_dates: body.unavailable_dates || [],
       is_active: true,
     });
 

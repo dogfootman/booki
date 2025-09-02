@@ -47,6 +47,7 @@ const DUMMY_ACTIVITIES: Activity[] = [
         is_available: true,
       }
     ],
+    unavailable_dates: ['2025-01-01', '2025-12-25'],
     is_active: true,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z',
@@ -75,6 +76,7 @@ const DUMMY_ACTIVITIES: Activity[] = [
         is_available: true,
       }
     ],
+    unavailable_dates: ['2025-01-01', '2025-03-20', '2025-12-25'],
     is_active: true,
     created_at: '2024-01-02T00:00:00Z',
     updated_at: '2024-01-02T00:00:00Z',
@@ -103,6 +105,7 @@ const DUMMY_ACTIVITIES: Activity[] = [
         is_available: true,
       }
     ],
+    unavailable_dates: ['2025-01-01', '2025-07-04', '2025-12-25'],
     is_active: false,
     created_at: '2024-01-03T00:00:00Z',
     updated_at: '2024-01-03T00:00:00Z',

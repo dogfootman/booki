@@ -125,6 +125,8 @@ export default function EditActivityPage({ params }: { params: Promise<{ id: str
     return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
   };
 
+
+
   useEffect(() => {
     const loadActivity = async () => {
       try {

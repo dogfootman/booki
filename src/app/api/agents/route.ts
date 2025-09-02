@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
       max_hours_per_day: body.max_hours_per_day || 8,
       is_active: true,
       agency_id: body.agency_id,
+      unavailable_dates: body.unavailable_dates || [],
     });
 
     return NextResponse.json(

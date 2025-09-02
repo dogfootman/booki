@@ -14,6 +14,7 @@ export interface Agent {
   max_hours_per_day: number;
   is_active: boolean;
   agency_id: string; // 소속 에이전시 ID 추가
+  unavailable_dates: string[]; // Array of unavailable dates in YYYY-MM-DD format
   created_at: string;
   updated_at: string;
 }
@@ -30,12 +31,19 @@ export interface CreateAgentRequest {
   hourly_rate?: number;
   max_hours_per_day?: number;
   agency_id: string; // 소속 에이전시 ID 추가
+  unavailable_dates?: string[]; // Array of unavailable dates in YYYY-MM-DD format
 }
 
 // Update agent request interface
 export interface UpdateAgentRequest extends Partial<CreateAgentRequest> {
   is_active?: boolean;
+  unavailable_dates?: string[]; // Array of unavailable dates in YYYY-MM-DD format
 }
+
+// Agent unavailable dates schema
+export const agentUnavailableDatesSchema = z.array(
+  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format. Use YYYY-MM-DD')
+).default([]);
 
 // Zod schemas for validation
 export const createAgentSchema = z.object({
@@ -49,6 +57,7 @@ export const createAgentSchema = z.object({
   hourly_rate: z.number().positive('Hourly rate must be positive').optional(),
   max_hours_per_day: z.number().int().min(1).max(24).default(8),
   agency_id: z.string().min(1, 'Agency is required'), // 소속 에이전시 필수 필드
+  unavailable_dates: agentUnavailableDatesSchema, // 불가 날짜 배열
 });
 
 export const updateAgentSchema = z.object({
@@ -63,6 +72,7 @@ export const updateAgentSchema = z.object({
   max_hours_per_day: z.number().int().min(1).max(24).default(8).optional(),
   is_active: z.boolean().optional(),
   agency_id: z.string().min(1, 'Agency is required').optional(), // 소속 에이전시 선택적 필드
+  unavailable_dates: agentUnavailableDatesSchema.optional(), // 불가 날짜 배열
 });
 
 export const agentIdSchema = z.object({
