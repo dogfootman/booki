@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Calendar, Users, Activity, Home, BarChart3, LogOut, User, Building2 } from 'lucide-react';
+import { Calendar, Users, Activity, Home, BarChart3, LogOut, User, Building2, CalendarX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserRole } from '@/types/user';
@@ -26,6 +26,7 @@ const getNavigationItems = (role: UserRole) => {
         { href: '/agents', label: '에이전트 관리', icon: Users },
         { href: '/activities', label: '액티비티 관리', icon: Activity },
         { href: '/calendar', label: '전체 스케줄', icon: Calendar },
+        { href: '/agency-schedules', label: '불가 스케줄 관리', icon: CalendarX },
       ];
     
     case UserRole.AGENCY_MANAGER:
@@ -36,6 +37,7 @@ const getNavigationItems = (role: UserRole) => {
         { href: '/agents', label: '에이전트 관리', icon: Users },
         { href: '/activities', label: '액티비티 관리', icon: Activity },
         { href: '/calendar', label: '스케줄 관리', icon: Calendar },
+        { href: '/agency-schedules', label: '불가 스케줄 관리', icon: CalendarX },
       ];
     
     case UserRole.AGENT:

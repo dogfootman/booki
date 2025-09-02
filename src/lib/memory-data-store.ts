@@ -1,5 +1,5 @@
-import { Agent, Activity, Booking, Agency } from '@/types';
-import { mockAgents, mockActivities, mockBookings, mockAgencies } from './mock-data';
+import { Agent, Activity, Booking, Agency, AgencyUnavailableSchedule } from '@/types';
+import { mockAgents, mockActivities, mockBookings, mockAgencies, mockAgencyUnavailableSchedules } from './mock-data';
 
 // Global instance to ensure persistence across Next.js API routes
 let globalInstance: MemoryDataStore | null = null;
@@ -13,12 +13,14 @@ export class MemoryDataStore {
   private activities: Map<string, Activity>;
   private bookings: Map<string, Booking>;
   private agencies: Map<string, Agency>;
+  private agencyUnavailableSchedules: Map<string, AgencyUnavailableSchedule>;
   
   private constructor() {
     this.agents = new Map();
     this.activities = new Map();
     this.bookings = new Map();
     this.agencies = new Map();
+    this.agencyUnavailableSchedules = new Map();
     
     this.initializeData();
   }
@@ -60,6 +62,13 @@ export class MemoryDataStore {
     if (mockAgencies) {
       mockAgencies.forEach(agency => {
         this.agencies.set(agency.id, { ...agency });
+      });
+    }
+    
+    // Initialize agency unavailable schedules
+    if (mockAgencyUnavailableSchedules) {
+      mockAgencyUnavailableSchedules.forEach(schedule => {
+        this.agencyUnavailableSchedules.set(schedule.id, { ...schedule });
       });
     }
   }
@@ -469,6 +478,186 @@ export class MemoryDataStore {
   public deleteAgency(id: string): boolean {
     return this.agencies.delete(id);
   }
+
+  // Agency Unavailable Schedule CRUD operations
+  /**
+   * Get all agency unavailable schedules with optional filtering
+   * 모든 에이전시 불가 스케줄을 반환합니다 (필터링 옵션 포함)
+   */
+  public getAgencyUnavailableSchedules(filters?: {
+    agency_id?: string;
+    date?: string;
+    date_from?: string;
+    date_to?: string;
+    is_active?: boolean;
+    search?: string;
+  }): AgencyUnavailableSchedule[] {
+    let schedules = Array.from(this.agencyUnavailableSchedules.values());
+    
+    if (filters?.agency_id) {
+      schedules = schedules.filter(schedule => schedule.agency_id === filters.agency_id);
+    }
+    
+    if (filters?.date) {
+      schedules = schedules.filter(schedule => schedule.date === filters.date);
+    }
+    
+    if (filters?.date_from) {
+      schedules = schedules.filter(schedule => schedule.date >= filters.date_from!);
+    }
+    
+    if (filters?.date_to) {
+      schedules = schedules.filter(schedule => schedule.date <= filters.date_to!);
+    }
+    
+    if (filters?.is_active !== undefined) {
+      schedules = schedules.filter(schedule => schedule.is_active === filters.is_active);
+    }
+    
+    if (filters?.search) {
+      const searchLower = filters.search.toLowerCase();
+      schedules = schedules.filter(schedule =>
+        schedule.reason?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    return schedules.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }
+
+  /**
+   * Get agency unavailable schedule by ID
+   * ID로 에이전시 불가 스케줄을 조회합니다
+   */
+  public getAgencyUnavailableScheduleById(id: string): AgencyUnavailableSchedule | undefined {
+    return this.agencyUnavailableSchedules.get(id);
+  }
+
+  /**
+   * Create new agency unavailable schedule
+   * 새로운 에이전시 불가 스케줄을 생성합니다
+   */
+  public createAgencyUnavailableSchedule(
+    scheduleData: Omit<AgencyUnavailableSchedule, 'id' | 'created_at' | 'updated_at'>
+  ): AgencyUnavailableSchedule {
+    // Validate agency exists
+    const agency = this.getAgencyById(scheduleData.agency_id);
+    if (!agency) {
+      throw new Error('Agency not found');
+    }
+
+    // Validate date format (YYYY-MM-DD)
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(scheduleData.date)) {
+      throw new Error('Invalid date format. Use YYYY-MM-DD');
+    }
+
+    // Check if schedule already exists for this agency and date
+    const existingSchedules = this.getAgencyUnavailableSchedules({
+      agency_id: scheduleData.agency_id,
+      date: scheduleData.date,
+      is_active: true,
+    });
+
+    if (existingSchedules.length > 0) {
+      throw new Error('Unavailable schedule already exists for this agency and date');
+    }
+
+    const id = this.generateId();
+    const now = this.getCurrentTimestamp();
+    
+    const newSchedule: AgencyUnavailableSchedule = {
+      ...scheduleData,
+      id,
+      created_at: now,
+      updated_at: now,
+    };
+    
+    this.agencyUnavailableSchedules.set(id, newSchedule);
+    return newSchedule;
+  }
+
+  /**
+   * Update existing agency unavailable schedule
+   * 기존 에이전시 불가 스케줄을 업데이트합니다
+   */
+  public updateAgencyUnavailableSchedule(
+    id: string,
+    updates: Partial<AgencyUnavailableSchedule>
+  ): AgencyUnavailableSchedule | null {
+    const schedule = this.agencyUnavailableSchedules.get(id);
+    if (!schedule) return null;
+
+    // If updating date, validate format and uniqueness
+    if (updates.date && updates.date !== schedule.date) {
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(updates.date)) {
+        throw new Error('Invalid date format. Use YYYY-MM-DD');
+      }
+
+      // Check if schedule already exists for this agency and new date
+      const existingSchedules = this.getAgencyUnavailableSchedules({
+        agency_id: schedule.agency_id,
+        date: updates.date,
+        is_active: true,
+      });
+
+      if (existingSchedules.length > 0) {
+        throw new Error('Unavailable schedule already exists for this agency and date');
+      }
+    }
+    
+    const updatedSchedule: AgencyUnavailableSchedule = {
+      ...schedule,
+      ...updates,
+      updated_at: this.getCurrentTimestamp(),
+    };
+    
+    this.agencyUnavailableSchedules.set(id, updatedSchedule);
+    return updatedSchedule;
+  }
+
+  /**
+   * Delete agency unavailable schedule by ID
+   * ID로 에이전시 불가 스케줄을 삭제합니다
+   */
+  public deleteAgencyUnavailableSchedule(id: string): boolean {
+    return this.agencyUnavailableSchedules.delete(id);
+  }
+
+  /**
+   * Check if a specific date is unavailable for agency
+   * 특정 날짜가 에이전시의 불가 날짜인지 확인합니다
+   */
+  public isAgencyDateUnavailable(agencyId: string, date: string): boolean {
+    const schedules = this.getAgencyUnavailableSchedules({
+      agency_id: agencyId,
+      date: date,
+      is_active: true,
+    });
+    
+    return schedules.length > 0;
+  }
+
+  /**
+   * Get unavailable dates for a specific agency within a date range
+   * 특정 에이전시의 날짜 범위 내 불가 날짜들을 조회합니다
+   */
+  public getAgencyUnavailableDatesInRange(
+    agencyId: string,
+    dateFrom: string,
+    dateTo: string
+  ): string[] {
+    const schedules = this.getAgencyUnavailableSchedules({
+      agency_id: agencyId,
+      date_from: dateFrom,
+      date_to: dateTo,
+      is_active: true,
+    });
+    
+    return schedules.map(schedule => schedule.date).sort();
+  }
   
   // Utility methods
   /**
@@ -496,6 +685,7 @@ export class MemoryDataStore {
     this.activities.clear();
     this.bookings.clear();
     this.agencies.clear();
+    this.agencyUnavailableSchedules.clear();
     this.initializeData();
   }
   
@@ -508,12 +698,14 @@ export class MemoryDataStore {
     activities: number;
     bookings: number;
     agencies: number;
+    agencyUnavailableSchedules: number;
   } {
     return {
       agents: this.agents.size,
       activities: this.activities.size,
       bookings: this.bookings.size,
       agencies: this.agencies.size,
+      agencyUnavailableSchedules: this.agencyUnavailableSchedules.size,
     };
   }
 
@@ -541,14 +733,14 @@ export class MemoryDataStore {
     if (participants > activity.max_participants) {
       return {
         isValid: false,
-        error: `Participants (${participants}) exceed activity maximum (${activity.max_participants})`,
+        error: `참가자 수가 초과되었습니다. 최대 ${activity.max_participants}명까지 가능하지만 현재 ${participants}명입니다.`,
       };
     }
 
     if (participants < activity.min_participants) {
       return {
         isValid: false,
-        error: `Participants (${participants}) below activity minimum (${activity.min_participants})`,
+        error: `참가자 수가 부족합니다. 최소 ${activity.min_participants}명이 필요하지만 현재 ${participants}명입니다.`,
       };
     }
 

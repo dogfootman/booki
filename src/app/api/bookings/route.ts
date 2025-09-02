@@ -88,6 +88,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check agency unavailable dates if agent is specified
+    if (body.agent_id) {
+      const agent = memoryDataStore.getAgentById(body.agent_id);
+      if (agent && agent.agency_id) {
+        const bookingDate = new Date(body.start_time).toISOString().split('T')[0];
+        
+        const isDateUnavailable = memoryDataStore.isAgencyDateUnavailable(agent.agency_id, bookingDate);
+        if (isDateUnavailable) {
+          return NextResponse.json(
+            { 
+              success: false, 
+              error: `예약 불가 날짜입니다. ${bookingDate}는 해당 에이전시의 운영 중단일입니다.`
+            },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // Validate that agent exists if agent_id is provided
     if (body.agent_id) {
       const agent = memoryDataStore.getAgentById(body.agent_id);
@@ -104,7 +123,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: false, 
-          error: `Number of participants (${body.participants}) exceeds activity maximum (${activity.max_participants})` 
+          error: `참가자 수가 초과되었습니다. 최대 ${activity.max_participants}명까지 가능하지만 현재 ${body.participants}명입니다.` 
         },
         { status: 400 }
       );
@@ -114,7 +133,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: false, 
-          error: `Number of participants (${body.participants}) is below activity minimum (${activity.min_participants})` 
+          error: `참가자 수가 부족합니다. 최소 ${activity.min_participants}명이 필요하지만 현재 ${body.participants}명입니다.` 
         },
         { status: 400 }
       );

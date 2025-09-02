@@ -3,6 +3,7 @@ export * from './agent';
 export * from './activity';
 export * from './booking';
 export * from './user';
+export * from './agency-unavailable-schedule';
 
 // 에이전시 타입 정의
 export interface Agency {

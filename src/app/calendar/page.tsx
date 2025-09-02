@@ -142,11 +142,13 @@ export default function CalendarPage() {
           body: JSON.stringify(data),
         });
         
-        if (!response.ok) {
-          throw new Error('Failed to create booking');
-        }
-        
         const result = await response.json();
+        
+        if (!response.ok) {
+          // 서버에서 온 구체적인 오류 메시지 사용
+          const errorMessage = result.error || 'Failed to create booking';
+          throw new Error(errorMessage);
+        }
         
         // Refresh bookings data
         const refreshResponse = await fetch('/api/bookings');

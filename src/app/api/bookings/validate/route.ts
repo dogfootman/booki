@@ -47,6 +47,23 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         );
       }
+
+      // Check agency unavailable dates
+      if (agent.agency_id) {
+        const bookingDate = new Date(body.start_time).toISOString().split('T')[0];
+        
+        const isDateUnavailable = memoryDataStore.isAgencyDateUnavailable(agent.agency_id, bookingDate);
+        if (isDateUnavailable) {
+          return NextResponse.json(
+            { 
+              success: false, 
+              error: `예약 불가 날짜입니다. ${bookingDate}는 해당 에이전시의 운영 중단일입니다.`,
+              validation_type: 'agency_unavailable_date'
+            },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // Perform slot availability validation

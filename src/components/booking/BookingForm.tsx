@@ -14,6 +14,7 @@ import { Calendar } from 'lucide-react';
 import { createBookingSchema, CreateBookingRequest } from '@/types/booking';
 import { Agent } from '@/types';
 import { Activity, DailyScheduleTimeSlot } from '@/types/activity';
+import { useToast } from '@/hooks/use-toast';
 
 interface BookingFormProps {
   agents: Agent[];
@@ -38,6 +39,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 }) => {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const { toast } = useToast();
 
   const {
     register,
@@ -101,11 +103,19 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       const activity = activities.find(a => a.id === watchedActivityId);
       setSelectedActivity(activity || null);
       
+      // Auto-set participants to minimum if current value is less than minimum
+      if (activity && watchedParticipants < activity.min_participants) {
+        setValue('participants', activity.min_participants);
+      }
+      
       // Auto-calculate total price
-      if (activity && watchedParticipants) {
-        const totalPrice = activity.price_usd * watchedParticipants;
+      if (activity) {
+        const participants = Math.max(watchedParticipants || 1, activity.min_participants);
+        const totalPrice = activity.price_usd * participants;
         setValue('total_price_usd', totalPrice);
       }
+    } else {
+      setSelectedActivity(null);
     }
   }, [watchedActivityId, activities, watchedParticipants, setValue]);
 
@@ -121,6 +131,12 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       await onSubmit(data as CreateBookingRequest);
     } catch (error) {
       console.error('Failed to submit booking:', error);
+      const errorMessage = error instanceof Error ? error.message : '예약 생성에 실패했습니다.';
+      toast({
+        title: '예약 실패',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -384,7 +400,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           <Input
             id="participants"
             type="number"
-            min={1}
+            min={selectedActivity?.min_participants || 1}
             max={selectedActivity?.max_participants || 1000}
             {...register('participants', { valueAsNumber: true })}
             onChange={(e) => handleParticipantsChange(parseInt(e.target.value) || 1)}
@@ -394,7 +410,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           )}
           {selectedActivity && (
             <p className="text-xs text-gray-500">
-              Max: {selectedActivity.max_participants} participants
+              최소: {selectedActivity.min_participants}명, 최대: {selectedActivity.max_participants}명
             </p>
           )}
         </div>
