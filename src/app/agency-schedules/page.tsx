@@ -331,7 +331,6 @@ export default function AgencySchedulesPage() {
           <p className="text-gray-600 mt-1">
             에이전시 및 액티비티별 예약 불가 날짜를 관리합니다
           </p>
-          <p className="text-xs text-gray-400 mt-2">현재 탭: {currentTab}</p>
         </div>
         
         <div className="flex gap-2">
@@ -569,10 +568,7 @@ export default function AgencySchedulesPage() {
               액티비티 불가 날짜
             </button>
             <button
-              onClick={() => {
-                console.log('Agent tab clicked, setting currentTab to agent');
-                setCurrentTab('agent');
-              }}
+              onClick={() => setCurrentTab('agent')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 currentTab === 'agent'
                   ? 'border-blue-500 text-blue-600'
@@ -778,7 +774,6 @@ export default function AgencySchedulesPage() {
       {/* 에이전트 불가 날짜 탭 */}
       {currentTab === 'agent' && (
         <div className="space-y-6">
-          {console.log('Rendering agent tab content, currentTab:', currentTab)}
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">에이전트 불가 날짜</h2>
