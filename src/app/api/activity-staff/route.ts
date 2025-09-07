@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAgentSchema, CreateAgentRequest } from '@/types/agent';
+import { createActivityStaffSchema, CreateActivityStaffRequest } from '@/types/activity-staff';
 import { memoryDataStore } from '@/lib/memory-data-store';
 
 export async function GET(request: NextRequest) {
@@ -30,19 +30,19 @@ export async function GET(request: NextRequest) {
       filters.agencyId = agencyId;
     }
 
-    // Get filtered agents from memory data store
-    const filteredAgents = memoryDataStore.getAgents(filters);
+    // Get filtered activity staff from memory data store
+    const filteredActivityStaffs = memoryDataStore.getActivityStaffs(filters);
 
     // Apply pagination
-    const total = filteredAgents.length;
+    const total = filteredActivityStaffs.length;
     const offset = (page - 1) * limit;
-    const paginatedAgents = filteredAgents.slice(offset, offset + limit);
+    const paginatedActivityStaffs = filteredActivityStaffs.slice(offset, offset + limit);
 
     const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({
       success: true,
-      data: paginatedAgents,
+      data: paginatedActivityStaffs,
       pagination: {
         page,
         limit,
@@ -61,10 +61,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CreateAgentRequest = await request.json();
+    const body: CreateActivityStaffRequest = await request.json();
 
     // Validate input
-    const validationResult = createAgentSchema.safeParse(body);
+    const validationResult = createActivityStaffSchema.safeParse(body);
     if (!validationResult.success) {
       return NextResponse.json(
         { 
@@ -79,13 +79,13 @@ export async function POST(request: NextRequest) {
     // Check if email already exists
     if (memoryDataStore.isEmailExists(body.email)) {
       return NextResponse.json(
-        { success: false, error: 'Agent with this email already exists' },
+        { success: false, error: 'Activity staff with this email already exists' },
         { status: 409 }
       );
     }
 
-    // Create new agent using memory data store
-    const newAgent = memoryDataStore.createAgent({
+    // Create new activity staff using memory data store
+    const newActivityStaff = memoryDataStore.createActivityStaff({
       name: body.name,
       email: body.email,
       phone: body.phone,
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { success: true, data: newAgent },
+      { success: true, data: newActivityStaff },
       { status: 201 }
     );
   } catch (error) {

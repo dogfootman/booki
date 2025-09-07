@@ -12,15 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from 'lucide-react';
 import { createBookingSchema, CreateBookingRequest } from '@/types/booking';
-import { Agent } from '@/types';
+import { ActivityStaff } from '@/types';
 import { Activity, DailyScheduleTimeSlot } from '@/types/activity';
 import { useToast } from '@/hooks/use-toast';
 
 interface BookingFormProps {
-  agents: Agent[];
+  activityStaffs: ActivityStaff[];
   activities: Activity[];
   selectedDate?: Date;
-  selectedAgentId?: string;
+  selectedActivityStaffId?: string;
   selectedActivityId?: string;
   onSubmit: (data: CreateBookingRequest) => Promise<void>;
   onCancel: () => void;
@@ -28,17 +28,17 @@ interface BookingFormProps {
 }
 
 export const BookingForm: React.FC<BookingFormProps> = ({
-  agents,
+  activityStaffs,
   activities,
   selectedDate,
-  selectedAgentId,
+  selectedActivityStaffId,
   selectedActivityId,
   onSubmit,
   onCancel,
   isLoading = false,
 }) => {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [selectedActivityStaff, setSelectedActivityStaff] = useState<ActivityStaff | null>(null);
   const { toast } = useToast();
 
   const {
@@ -54,7 +54,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       start_time: '',
       end_time: '',
       activity_id: '',
-      agent_id: '',
+      activity_staff_id: '',
       customer_name: '',
       customer_email: '',
       customer_phone: '',
@@ -65,7 +65,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   });
 
   const watchedActivityId = watch('activity_id');
-  const watchedAgentId = watch('agent_id');
+  const watchedAgentId = watch('activity_staff_id');
   const watchedParticipants = watch('participants');
   const watchedStartTime = watch('start_time');
   const watchedEndTime = watch('end_time');
@@ -84,10 +84,10 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       setValue('end_time', '');
     }
     
-    if (selectedAgentId) {
-      setValue('agent_id', selectedAgentId);
+    if (selectedActivityStaffId) {
+      setValue('activity_staff_id', selectedActivityStaffId);
     } else {
-      setValue('agent_id', '');
+      setValue('activity_staff_id', '');
     }
     
     if (selectedActivityId) {
@@ -95,7 +95,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     } else {
       setValue('activity_id', '');
     }
-  }, [selectedDate, selectedAgentId, selectedActivityId, setValue]);
+  }, [selectedDate, selectedActivityStaffId, selectedActivityId, setValue]);
 
   // Update selected activity and agent when IDs change
   useEffect(() => {
@@ -121,10 +121,10 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
   useEffect(() => {
     if (watchedAgentId) {
-      const agent = agents.find(a => a.id === watchedAgentId);
+      const agent = activityStaffs.find(a => a.id === watchedAgentId);
       setSelectedAgent(agent || null);
     }
-  }, [watchedAgentId, agents]);
+  }, [watchedAgentId, activityStaffs]);
 
   const handleFormSubmit = async (data: any) => {
     try {
@@ -143,10 +143,10 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         }
 
         // 에이전트 불가 날짜 체크
-        if (selectedAgent && selectedAgent.unavailable_dates?.includes(bookingDate)) {
+        if (selectedActivityStaff && selectedActivityStaff.unavailable_dates?.includes(bookingDate)) {
           toast({
             title: '예약 불가 날짜',
-            description: `${bookingDate}는 선택된 에이전트(${selectedAgent.name})의 휴무일입니다. 다른 날짜나 다른 에이전트를 선택해주세요.`,
+            description: `${bookingDate}는 선택된 에이전트(${selectedActivityStaff.name})의 휴무일입니다. 다른 날짜나 다른 에이전트를 선택해주세요.`,
             variant: 'destructive',
           });
           return;
@@ -180,7 +180,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   };
 
   const handleAgentChange = (agentId: string) => {
-    setValue('agent_id', agentId);
+    setValue('activity_staff_id', agentId);
   };
 
   const handleParticipantsChange = (participants: number) => {
@@ -236,7 +236,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   // Check if selected date is unavailable
   const isDateUnavailable = selectedDate && (
     (selectedActivity && selectedActivity.unavailable_dates?.includes(format(selectedDate, 'yyyy-MM-dd'))) ||
-    (selectedAgent && selectedAgent.unavailable_dates?.includes(format(selectedDate, 'yyyy-MM-dd')))
+    (selectedActivityStaff && selectedActivityStaff.unavailable_dates?.includes(format(selectedDate, 'yyyy-MM-dd')))
   );
 
   // Check if all required fields are filled and date is available
@@ -286,21 +286,21 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
       {/* Agent Selection */}
       <div className="space-y-2">
-        <Label htmlFor="agent_id">Agent (Optional)</Label>
+        <Label htmlFor="activity_staff_id">Agent (Optional)</Label>
         <Select value={watchedAgentId} onValueChange={handleAgentChange}>
           <SelectTrigger>
             <SelectValue placeholder="Select an agent" />
           </SelectTrigger>
           <SelectContent>
-            {agents.map((agent) => (
+            {activityStaffs.map((agent) => (
               <SelectItem key={agent.id} value={agent.id}>
                 {agent.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {errors.agent_id && (
-          <p className="text-sm text-red-600">{errors.agent_id.message}</p>
+        {errors.activity_staff_id && (
+          <p className="text-sm text-red-600">{errors.activity_staff_id.message}</p>
         )}
       </div>
 
@@ -343,13 +343,13 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           )}
 
           {/* 에이전트 불가 날짜 안내 */}
-          {selectedDate && selectedAgent && selectedAgent.unavailable_dates?.includes(format(selectedDate, 'yyyy-MM-dd')) && (
+          {selectedDate && selectedActivityStaff && selectedActivityStaff.unavailable_dates?.includes(format(selectedDate, 'yyyy-MM-dd')) && (
             <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
               <div className="flex items-center space-x-2 text-orange-800">
                 <span className="text-sm font-medium">⚠️ 에이전트 휴무일</span>
               </div>
               <p className="text-sm text-orange-700 mt-1">
-                선택하신 날짜는 {selectedAgent.name} 에이전트의 휴무일입니다. 다른 날짜나 다른 에이전트를 선택해주세요.
+                선택하신 날짜는 {selectedActivityStaff.name} 에이전트의 휴무일입니다. 다른 날짜나 다른 에이전트를 선택해주세요.
               </p>
             </div>
           )}
@@ -363,10 +363,10 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           )}
 
           {/* 에이전트 불가 날짜 목록 표시 */}
-          {selectedAgent && selectedAgent.unavailable_dates && selectedAgent.unavailable_dates.length > 0 && (
+          {selectedActivityStaff && selectedActivityStaff.unavailable_dates && selectedActivityStaff.unavailable_dates.length > 0 && (
             <div className="text-xs text-gray-500">
-              <span className="font-medium">{selectedAgent.name} 에이전트 휴무일:</span> {selectedAgent.unavailable_dates.slice(0, 3).join(', ')}
-              {selectedAgent.unavailable_dates.length > 3 && ` 외 ${selectedAgent.unavailable_dates.length - 3}일`}
+              <span className="font-medium">{selectedActivityStaff.name} 에이전트 휴무일:</span> {selectedActivityStaff.unavailable_dates.slice(0, 3).join(', ')}
+              {selectedActivityStaff.unavailable_dates.length > 3 && ` 외 ${selectedActivityStaff.unavailable_dates.length - 3}일`}
             </div>
           )}
         </div>

@@ -1,8 +1,8 @@
-import { Agent, Activity, Booking, Agency } from '@/types';
+import { ActivityStaff, Activity, Booking, Agency } from '@/types';
 import { BookingStatus } from '@/types/booking';
 
-// Mock agents data
-export const mockAgents: Agent[] = [
+// Mock activity staffs data
+export const mockActivityStaffs: ActivityStaff[] = [
   {
     id: '1',
     name: 'John Doe',
@@ -589,7 +589,7 @@ export const mockBookings = [
   {
     id: 'booking-001',
     activity_id: '1',
-    agent_id: '1',
+    activity_staff_id: '1',
     customer_name: 'Alice Johnson',
     customer_email: 'alice@example.com',
     customer_phone: '+1-555-0101',
@@ -605,7 +605,7 @@ export const mockBookings = [
   {
     id: 'booking-002',
     activity_id: '2',
-    agent_id: '2',
+    activity_staff_id: '2',
     customer_name: 'Bob Smith',
     customer_email: 'bob@example.com',
     customer_phone: '+1-555-0102',
@@ -621,7 +621,7 @@ export const mockBookings = [
   {
     id: 'booking-003',
     activity_id: '3',
-    agent_id: '3',
+    activity_staff_id: '3',
     customer_name: 'Carol Davis',
     customer_email: 'carol@example.com',
     customer_phone: '+1-555-0103',
@@ -637,7 +637,7 @@ export const mockBookings = [
   {
     id: 'booking-004',
     activity_id: '4',
-    agent_id: '1',
+    activity_staff_id: '1',
     customer_name: 'David Wilson',
     customer_email: 'david@example.com',
     customer_phone: '+1-555-0104',
@@ -653,7 +653,7 @@ export const mockBookings = [
   {
     id: 'booking-005',
     activity_id: '5',
-    agent_id: '2',
+    activity_staff_id: '2',
     customer_name: 'Eva Brown',
     customer_email: 'eva@example.com',
     customer_phone: '+1-555-0105',

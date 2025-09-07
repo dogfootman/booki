@@ -23,7 +23,7 @@ const getNavigationItems = (role: UserRole) => {
         ...baseItems,
         { href: '/dashboard', label: '대시보드', icon: BarChart3 },
         { href: '/agencies', label: '에이전시 관리', icon: Building2 },
-        { href: '/agents', label: '에이전트 관리', icon: Users },
+        { href: '/activity-staff', label: '액티비티 스태프 관리', icon: Users },
         { href: '/activities', label: '액티비티 관리', icon: Activity },
         { href: '/calendar', label: '전체 스케줄', icon: Calendar },
         { href: '/agency-schedules', label: '불가 스케줄 관리', icon: CalendarX },
@@ -34,13 +34,13 @@ const getNavigationItems = (role: UserRole) => {
         ...baseItems,
         { href: '/dashboard', label: '대시보드', icon: BarChart3 },
         { href: '/agencies', label: '에이전시 관리', icon: Building2 },
-        { href: '/agents', label: '에이전트 관리', icon: Users },
+        { href: '/activity-staff', label: '액티비티 스태프 관리', icon: Users },
         { href: '/activities', label: '액티비티 관리', icon: Activity },
         { href: '/calendar', label: '스케줄 관리', icon: Calendar },
         { href: '/agency-schedules', label: '불가 스케줄 관리', icon: CalendarX },
       ];
     
-    case UserRole.AGENT:
+    case UserRole.ACTIVITY_STAFF:
       return [
         ...baseItems,
         { href: '/dashboard', label: '내 대시보드', icon: BarChart3 },
@@ -76,8 +76,8 @@ export const Navigation: React.FC = () => {
         return '시스템 관리자';
       case UserRole.AGENCY_MANAGER:
         return '에이전시 매니저';
-      case UserRole.AGENT:
-        return '에이전트';
+      case UserRole.ACTIVITY_STAFF:
+        return '액티비티 스태프';
       default:
         return '사용자';
     }

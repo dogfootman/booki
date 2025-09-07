@@ -4,7 +4,7 @@ import { z } from 'zod';
 export enum UserRole {
   ADMIN = 'admin',
   AGENCY_MANAGER = 'agency_manager',
-  AGENT = 'agent',
+  ACTIVITY_STAFF = 'activity_staff',
 }
 
 // Base user interface
@@ -15,7 +15,7 @@ export interface User {
   role: UserRole;
   avatar_url?: string;
   is_active: boolean;
-  agency_id?: string; // For agency_manager and agent roles
+  agency_id?: string; // For agency_manager and activity_staff roles
   created_at: string;
   updated_at: string;
 }
@@ -33,8 +33,8 @@ export interface AgencyManagerUser extends User {
   permissions: string[];
 }
 
-export interface AgentUser extends User {
-  role: UserRole.AGENT;
+export interface ActivityStaffUser extends User {
+  role: UserRole.ACTIVITY_STAFF;
   agency_id: string;
   agency_name: string;
   specialties: string[];
@@ -42,7 +42,7 @@ export interface AgentUser extends User {
 }
 
 // Union type for all user types
-export type AuthenticatedUser = AdminUser | AgencyManagerUser | AgentUser;
+export type AuthenticatedUser = AdminUser | AgencyManagerUser | ActivityStaffUser;
 
 // Login request interface
 export interface LoginRequest {

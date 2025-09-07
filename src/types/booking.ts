@@ -4,7 +4,7 @@ import { z } from 'zod';
 export interface Booking {
   id: string;
   activity_id: string;
-  agent_id: string;
+  activity_staff_id: string;
   customer_name: string;
   customer_email: string;
   customer_phone?: string;
@@ -30,7 +30,7 @@ export enum BookingStatus {
 // Create booking request interface
 export interface CreateBookingRequest {
   activity_id: string;
-  agent_id?: string;
+  activity_staff_id?: string;
   customer_name: string;
   customer_email: string;
   customer_phone?: string;
@@ -46,10 +46,10 @@ export interface UpdateBookingRequest extends Partial<CreateBookingRequest> {
   status?: BookingStatus;
 }
 
-// Agent schedule interface
-export interface AgentSchedule {
+// Activity staff schedule interface
+export interface ActivityStaffSchedule {
   id: string;
-  agent_id: string;
+  activity_staff_id: string;
   day_of_week: number; // 0-6 (Sunday-Saturday)
   start_time: string; // HH:mm format
   end_time: string; // HH:mm format
@@ -59,9 +59,9 @@ export interface AgentSchedule {
   updated_at: string;
 }
 
-// Agent availability interface for specific dates
-export interface AgentAvailability {
-  agent_id: string;
+// Activity staff availability interface for specific dates
+export interface ActivityStaffAvailability {
+  activity_staff_id: string;
   date: string; // YYYY-MM-DD format
   available_slots: TimeSlot[];
   total_bookings: number;
@@ -87,7 +87,7 @@ export interface CalendarEvent {
   start: Date;
   end: Date;
   type: 'booking' | 'unavailable' | 'break';
-  agent_id?: string;
+  activity_staff_id?: string;
   booking_id?: string;
   color?: string;
 }
@@ -95,7 +95,7 @@ export interface CalendarEvent {
 // Zod schemas for validation
 export const createBookingSchema = z.object({
   activity_id: z.string().min(1, 'Activity is required'),
-  agent_id: z.string().optional(),
+  activity_staff_id: z.string().optional(),
   customer_name: z.string().min(1, 'Customer name is required').max(255, 'Name too long'),
   customer_email: z.string().email('Invalid email format'),
   customer_phone: z.string().optional(),
@@ -115,7 +115,7 @@ export const createBookingSchema = z.object({
 
 export const updateBookingSchema = z.object({
   activity_id: z.string().uuid('Invalid activity ID').optional(),
-  agent_id: z.string().uuid('Invalid agent ID').optional(),
+  activity_staff_id: z.string().uuid('Invalid activity staff ID').optional(),
   customer_name: z.string().min(1, 'Customer name is required').max(255, 'Name too long').optional(),
   customer_email: z.string().email('Invalid email format').optional(),
   customer_phone: z.string().optional(),
@@ -127,8 +127,8 @@ export const updateBookingSchema = z.object({
   notes: z.string().max(1000, 'Notes too long').optional(),
 });
 
-export const agentScheduleSchema = z.object({
-  agent_id: z.string().uuid('Invalid agent ID'),
+export const activityStaffScheduleSchema = z.object({
+  activity_staff_id: z.string().uuid('Invalid activity staff ID'),
   day_of_week: z.number().int().min(0).max(6, 'Day must be 0-6'),
   start_time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
   end_time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
@@ -147,7 +147,7 @@ export const agentScheduleSchema = z.object({
 export interface BookingQueryParams {
   page?: number;
   limit?: number;
-  agent_id?: string;
+  activity_staff_id?: string;
   activity_id?: string;
   status?: BookingStatus;
   start_date?: string;
@@ -174,20 +174,20 @@ export interface BookingsResponse {
   };
 }
 
-export interface AgentScheduleResponse {
+export interface ActivityStaffScheduleResponse {
   success: boolean;
-  data?: AgentSchedule;
+  data?: ActivityStaffSchedule;
   error?: string;
 }
 
-export interface AgentSchedulesResponse {
+export interface ActivityStaffSchedulesResponse {
   success: boolean;
-  data?: AgentSchedule[];
+  data?: ActivityStaffSchedule[];
   error?: string;
 }
 
-export interface AgentAvailabilityResponse {
+export interface ActivityStaffAvailabilityResponse {
   success: boolean;
-  data?: AgentAvailability;
+  data?: ActivityStaffAvailability;
   error?: string;
 }

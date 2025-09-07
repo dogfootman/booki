@@ -1,5 +1,5 @@
-import { Agent, Activity, Booking, Agency, AgencyUnavailableSchedule } from '@/types';
-import { mockAgents, mockActivities, mockBookings, mockAgencies, mockAgencyUnavailableSchedules } from './mock-data';
+import { ActivityStaff, Activity, Booking, Agency, AgencyUnavailableSchedule } from '@/types';
+import { mockActivityStaffs, mockActivities, mockBookings, mockAgencies, mockAgencyUnavailableSchedules } from './mock-data';
 
 // Global instance to ensure persistence across Next.js API routes
 let globalInstance: MemoryDataStore | null = null;
@@ -9,14 +9,14 @@ let globalInstance: MemoryDataStore | null = null;
  * 데이터를 메모리에 저장하여 런타임 중 CRUD 작업을 지원하는 저장소
  */
 export class MemoryDataStore {
-  private agents: Map<string, Agent>;
+  private activityStaffs: Map<string, ActivityStaff>;
   private activities: Map<string, Activity>;
   private bookings: Map<string, Booking>;
   private agencies: Map<string, Agency>;
   private agencyUnavailableSchedules: Map<string, AgencyUnavailableSchedule>;
   
   private constructor() {
-    this.agents = new Map();
+    this.activityStaffs = new Map();
     this.activities = new Map();
     this.bookings = new Map();
     this.agencies = new Map();
@@ -41,9 +41,9 @@ export class MemoryDataStore {
    * 모의 데이터로 데이터 저장소를 초기화합니다
    */
   private initializeData(): void {
-    // Initialize agents
-    mockAgents.forEach(agent => {
-      this.agents.set(agent.id, { ...agent });
+    // Initialize activity staffs
+    mockActivityStaffs.forEach(activityStaff => {
+      this.activityStaffs.set(activityStaff.id, { ...activityStaff });
     });
     
     // Initialize activities
@@ -73,91 +73,91 @@ export class MemoryDataStore {
     }
   }
   
-  // Agent CRUD operations
+  // ActivityStaff CRUD operations
   /**
-   * Get all agents with optional filtering
+   * Get all activity staffs with optional filtering
    * 모든 에이전트를 반환합니다 (필터링 옵션 포함)
    */
-  public getAgents(filters?: {
+  public getActivityStaffs(filters?: {
     isActive?: boolean;
     search?: string;
     agencyId?: string;
-  }): Agent[] {
-    let agents = Array.from(this.agents.values());
+  }): ActivityStaff[] {
+    let activityStaffs = Array.from(this.activityStaffs.values());
     
     if (filters?.isActive !== undefined) {
-      agents = agents.filter(agent => agent.is_active === filters.isActive);
+      activityStaffs = activityStaffs.filter(activityStaff => activityStaff.is_active === filters.isActive);
     }
     
     if (filters?.search) {
       const searchLower = filters.search.toLowerCase();
-      agents = agents.filter(agent =>
-        agent.name.toLowerCase().includes(searchLower) ||
-        agent.email.toLowerCase().includes(searchLower)
+      activityStaffs = activityStaffs.filter(activityStaff =>
+        activityStaff.name.toLowerCase().includes(searchLower) ||
+        activityStaff.email.toLowerCase().includes(searchLower)
       );
     }
     
     if (filters?.agencyId) {
-      agents = agents.filter(agent => agent.agency_id === filters.agencyId);
+      activityStaffs = activityStaffs.filter(activityStaff => activityStaff.agency_id === filters.agencyId);
     }
     
-    return agents.sort((a, b) => 
+    return activityStaffs.sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }
   
   /**
-   * Get agent by ID
+   * Get activityStaff by ID
    * ID로 에이전트를 조회합니다
    */
-  public getAgentById(id: string): Agent | undefined {
-    return this.agents.get(id);
+  public getActivityStaffById(id: string): ActivityStaff | undefined {
+    return this.activityStaffs.get(id);
   }
   
   /**
-   * Create new agent
+   * Create new activityStaff
    * 새로운 에이전트를 생성합니다
    */
-  public createAgent(agentData: Omit<Agent, 'id' | 'created_at' | 'updated_at'>): Agent {
+  public createActivityStaff(activityStaffData: Omit<ActivityStaff, 'id' | 'created_at' | 'updated_at'>): ActivityStaff {
     const id = this.generateId();
     const now = this.getCurrentTimestamp();
     
-    const newAgent: Agent = {
-      ...agentData,
+    const newActivityStaff: ActivityStaff = {
+      ...activityStaffData,
       id,
-      unavailable_dates: agentData.unavailable_dates || [],
+      unavailable_dates: activityStaffData.unavailable_dates || [],
       created_at: now,
       updated_at: now,
     };
     
-    this.agents.set(id, newAgent);
-    return newAgent;
+    this.activityStaffs.set(id, newActivityStaff);
+    return newActivityStaff;
   }
   
   /**
-   * Update existing agent
+   * Update existing activityStaff
    * 기존 에이전트를 업데이트합니다
    */
-  public updateAgent(id: string, updates: Partial<Agent>): Agent | null {
-    const agent = this.agents.get(id);
-    if (!agent) return null;
+  public updateActivityStaff(id: string, updates: Partial<ActivityStaff>): ActivityStaff | null {
+    const activityStaff = this.activityStaffs.get(id);
+    if (!activityStaff) return null;
     
-    const updatedAgent: Agent = {
-      ...agent,
+    const updatedActivityStaff: ActivityStaff = {
+      ...activityStaff,
       ...updates,
       updated_at: this.getCurrentTimestamp(),
     };
     
-    this.agents.set(id, updatedAgent);
-    return updatedAgent;
+    this.activityStaffs.set(id, updatedActivityStaff);
+    return updatedActivityStaff;
   }
   
   /**
-   * Delete agent by ID
+   * Delete activityStaff by ID
    * ID로 에이전트를 삭제합니다
    */
-  public deleteAgent(id: string): boolean {
-    return this.agents.delete(id);
+  public deleteActivityStaff(id: string): boolean {
+    return this.activityStaffs.delete(id);
   }
   
   /**
@@ -165,8 +165,8 @@ export class MemoryDataStore {
    * 이메일이 이미 존재하는지 확인합니다
    */
   public isEmailExists(email: string, excludeId?: string): boolean {
-    return Array.from(this.agents.values()).some(agent => 
-      agent.email === email && agent.id !== excludeId
+    return Array.from(this.activityStaffs.values()).some(activityStaff => 
+      activityStaff.email === email && activityStaff.id !== excludeId
     );
   }
   
@@ -350,7 +350,7 @@ export class MemoryDataStore {
    */
   public getBookings(filters?: {
     status?: string;
-    agentId?: string;
+    activityStaffId?: string;
     activityId?: string;
     date?: string;
   }): Booking[] {
@@ -360,8 +360,8 @@ export class MemoryDataStore {
       bookings = bookings.filter(booking => booking.status === filters.status);
     }
     
-    if (filters?.agentId) {
-      bookings = bookings.filter(booking => booking.agent_id === filters.agentId);
+    if (filters?.activityStaffId) {
+      bookings = bookings.filter(booking => booking.activity_staff_id === filters.activityStaffId);
     }
     
     if (filters?.activityId) {
@@ -768,7 +768,7 @@ export class MemoryDataStore {
    * 데이터 저장소를 초기 상태로 리셋합니다
    */
   public reset(): void {
-    this.agents.clear();
+    this.activityStaffs.clear();
     this.activities.clear();
     this.bookings.clear();
     this.agencies.clear();
@@ -781,14 +781,14 @@ export class MemoryDataStore {
    * 데이터 저장소 통계를 반환합니다
    */
   public getStats(): {
-    agents: number;
+    activityStaffs: number;
     activities: number;
     bookings: number;
     agencies: number;
     agencyUnavailableSchedules: number;
   } {
     return {
-      agents: this.agents.size,
+      activity_staff: this.activityStaffs.size,
       activities: this.activities.size,
       bookings: this.bookings.size,
       agencies: this.agencies.size,
@@ -1044,62 +1044,62 @@ export class MemoryDataStore {
     return start1Total < end2Total && start2Total < end1Total;
   }
 
-  // Agent unavailable dates management methods
+  // ActivityStaff unavailable dates management methods
   /**
-   * Get agent unavailable dates
+   * Get activityStaff unavailable dates
    * 에이전트 불가 날짜 목록을 가져옵니다
    */
-  public getAgentUnavailableDates(agentId: string): string[] {
-    const agent = this.getAgentById(agentId);
-    return agent?.unavailable_dates || [];
+  public getActivityStaffUnavailableDates(activityStaffId: string): string[] {
+    const activityStaff = this.getActivityStaffById(activityStaffId);
+    return activityStaff?.unavailable_dates || [];
   }
 
   /**
-   * Add agent unavailable date
+   * Add activityStaff unavailable date
    * 에이전트 불가 날짜를 추가합니다
    */
-  public addAgentUnavailableDate(agentId: string, date: string): boolean {
-    const agent = this.getAgentById(agentId);
-    if (!agent) return false;
+  public addActivityStaffUnavailableDate(activityStaffId: string, date: string): boolean {
+    const activityStaff = this.getActivityStaffById(activityStaffId);
+    if (!activityStaff) return false;
 
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(date)) {
       throw new Error('Invalid date format. Use YYYY-MM-DD');
     }
 
-    if (agent.unavailable_dates?.includes(date)) {
+    if (activityStaff.unavailable_dates?.includes(date)) {
       throw new Error('Date is already in unavailable dates list');
     }
 
-    const updatedUnavailableDates = [...(agent.unavailable_dates || []), date].sort();
-    this.updateAgent(agentId, { unavailable_dates: updatedUnavailableDates });
+    const updatedUnavailableDates = [...(activityStaff.unavailable_dates || []), date].sort();
+    this.updateActivityStaff(activityStaffId, { unavailable_dates: updatedUnavailableDates });
     return true;
   }
 
   /**
-   * Remove agent unavailable date
+   * Remove activityStaff unavailable date
    * 에이전트 불가 날짜를 제거합니다
    */
-  public removeAgentUnavailableDate(agentId: string, date: string): boolean {
-    const agent = this.getAgentById(agentId);
-    if (!agent) return false;
+  public removeActivityStaffUnavailableDate(activityStaffId: string, date: string): boolean {
+    const activityStaff = this.getActivityStaffById(activityStaffId);
+    if (!activityStaff) return false;
 
-    if (!agent.unavailable_dates?.includes(date)) {
+    if (!activityStaff.unavailable_dates?.includes(date)) {
       throw new Error('Date is not in unavailable dates list');
     }
 
-    const updatedUnavailableDates = agent.unavailable_dates.filter(d => d !== date);
-    this.updateAgent(agentId, { unavailable_dates: updatedUnavailableDates });
+    const updatedUnavailableDates = activityStaff.unavailable_dates.filter(d => d !== date);
+    this.updateActivityStaff(activityStaffId, { unavailable_dates: updatedUnavailableDates });
     return true;
   }
 
   /**
-   * Set agent unavailable dates (replace all)
+   * Set activityStaff unavailable dates (replace all)
    * 에이전트 불가 날짜를 설정합니다 (전체 교체)
    */
-  public setAgentUnavailableDates(agentId: string, dates: string[]): boolean {
-    const agent = this.getAgentById(agentId);
-    if (!agent) return false;
+  public setActivityStaffUnavailableDates(activityStaffId: string, dates: string[]): boolean {
+    const activityStaff = this.getActivityStaffById(activityStaffId);
+    if (!activityStaff) return false;
 
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     for (const date of dates) {
@@ -1109,17 +1109,17 @@ export class MemoryDataStore {
     }
 
     const uniqueSortedDates = [...new Set(dates)].sort();
-    this.updateAgent(agentId, { unavailable_dates: uniqueSortedDates });
+    this.updateActivityStaff(activityStaffId, { unavailable_dates: uniqueSortedDates });
     return true;
   }
 
   /**
-   * Check if agent is unavailable on specific date
+   * Check if activityStaff is unavailable on specific date
    * 특정 날짜에 에이전트가 불가한지 확인합니다
    */
-  public isAgentDateUnavailable(agentId: string, date: string): boolean {
-    const agent = this.getAgentById(agentId);
-    return agent?.unavailable_dates?.includes(date) || false;
+  public isActivityStaffDateUnavailable(activityStaffId: string, date: string): boolean {
+    const activityStaff = this.getActivityStaffById(activityStaffId);
+    return activityStaff?.unavailable_dates?.includes(date) || false;
   }
 
   /**

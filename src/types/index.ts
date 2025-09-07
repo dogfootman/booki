@@ -1,5 +1,5 @@
 // Export all types for easy importing
-export * from './agent';
+export * from './activity-staff';
 export * from './activity';
 export * from './booking';
 export * from './user';

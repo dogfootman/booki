@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { agenciesApi } from '@/features/agencies/api';
-import { agentsApi } from '@/features/agents/api';
+import { activityStaffApi } from '@/features/activity-staff/api';
 import { Agency } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,9 +78,9 @@ export default function AgenciesPage() {
         agencyList.map(async (agency) => {
           try {
             console.log(`Loading agents for agency ${agency.id} (${agency.name})`);
-            const agentsResponse = await agentsApi.getAgents({ agencyId: agency.id });
-            console.log(`Agency ${agency.id} response:`, agentsResponse);
-            counts[agency.id] = agentsResponse.success && agentsResponse.data ? agentsResponse.data.length : 0;
+            const activityStaffsResponse = await activityStaffApi.getActivityStaffs({ agencyId: agency.id });
+            console.log(`Agency ${agency.id} response:`, activityStaffsResponse);
+            counts[agency.id] = activityStaffsResponse.success && activityStaffsResponse.data ? activityStaffsResponse.data.length : 0;
           } catch (error) {
             console.warn(`Failed to load agent count for agency ${agency.id}:`, error);
             counts[agency.id] = 0;
@@ -126,12 +126,12 @@ export default function AgenciesPage() {
       }
       
       // 실시간으로 다시 한 번 확인
-      const agentsResponse = await agentsApi.getAgents({ agencyId });
-      console.log(`Delete check - agents response:`, agentsResponse);
+      const activityStaffsResponse = await activityStaffApi.getActivityStaffs({ agencyId });
+      console.log(`Delete check - agents response:`, activityStaffsResponse);
       
-      if (agentsResponse.success && agentsResponse.data && agentsResponse.data.length > 0) {
-        const agentCount = agentsResponse.data.length;
-        const agentNames = agentsResponse.data.map(agent => agent.name).join(', ');
+      if (activityStaffsResponse.success && activityStaffsResponse.data && activityStaffsResponse.data.length > 0) {
+        const agentCount = activityStaffsResponse.data.length;
+        const agentNames = activityStaffsResponse.data.map(agent => agent.name).join(', ');
         
         const shouldProceed = confirm(
           `⚠️ 삭제 불가능\n\n"${agencyName}" 에이전시에는 ${agentCount}명의 에이전트가 등록되어 있습니다:\n${agentNames}\n\n에이전시를 삭제하려면 먼저 모든 에이전트를 다른 에이전시로 이동하거나 삭제해야 합니다.\n\n에이전트 관리 페이지로 이동하시겠습니까?`

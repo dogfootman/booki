@@ -11,8 +11,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { agencyUnavailableSchedulesApi } from '@/features/agency-unavailable-schedules/api';
 import { agenciesApi } from '@/features/agencies/api';
 import { activitiesApi } from '@/features/activities/api';
-import { agentsApi } from '@/features/agents/api';
-import { AgencyUnavailableSchedule, Agency, Activity, Agent } from '@/types';
+import { activityStaffApi } from '@/features/activity-staff/api';
+import { AgencyUnavailableSchedule, Agency, Activity, ActivityStaff } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 interface ScheduleFormData {
@@ -26,18 +26,18 @@ export default function AgencySchedulesPage() {
   const [schedules, setSchedules] = useState<AgencyUnavailableSchedule[]>([]);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [activityStaffs, setActivityStaffs] = useState<ActivityStaff[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isActivityFormOpen, setIsActivityFormOpen] = useState(false);
   const [isAgentFormOpen, setIsAgentFormOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<AgencyUnavailableSchedule | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [selectedActivityStaff, setSelectedActivityStaff] = useState<ActivityStaff | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAgency, setSelectedAgency] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [currentTab, setCurrentTab] = useState<'agency' | 'activity' | 'agent'>('agency');
+  const [currentTab, setCurrentTab] = useState<'agency' | 'activity' | 'activityStaff'>('agency');
   const { toast } = useToast();
 
   const [formData, setFormData] = useState<ScheduleFormData>({
@@ -51,11 +51,11 @@ export default function AgencySchedulesPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [schedulesRes, agenciesRes, activitiesRes, agentsRes] = await Promise.all([
+      const [schedulesRes, agenciesRes, activitiesRes, activityStaffsRes] = await Promise.all([
         agencyUnavailableSchedulesApi.getSchedules(),
         agenciesApi.getAgencies(),
         activitiesApi.getActivities(),
-        agentsApi.getAgents()
+        activityStaffApi.getActivityStaffs()
       ]);
 
       if (schedulesRes.success && schedulesRes.data) {
@@ -70,8 +70,8 @@ export default function AgencySchedulesPage() {
         setActivities(activitiesRes.data);
       }
 
-      if (agentsRes.success && agentsRes.data) {
-        setAgents(agentsRes.data);
+      if (activityStaffsRes.success && activityStaffsRes.data) {
+        setActivityStaffs(activityStaffsRes.data);
       }
     } catch (error) {
       console.error('데이터 로드 실패:', error);
@@ -568,9 +568,9 @@ export default function AgencySchedulesPage() {
               액티비티 불가 날짜
             </button>
             <button
-              onClick={() => setCurrentTab('agent')}
+              onClick={() => setCurrentTab('activityStaff')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                currentTab === 'agent'
+                currentTab === 'activityStaff'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
@@ -772,7 +772,7 @@ export default function AgencySchedulesPage() {
       )}
 
       {/* 에이전트 불가 날짜 탭 */}
-      {currentTab === 'agent' && (
+      {currentTab === 'activityStaff' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
@@ -783,33 +783,33 @@ export default function AgencySchedulesPage() {
 
           {/* 에이전트 목록 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {agents.map((agent) => (
-              <Card key={agent.id} className="hover:shadow-md transition-shadow">
+            {activityStaffs.map((activityStaff) => (
+              <Card key={activityStaff.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{agent.name}</CardTitle>
-                    <Badge variant={agent.is_active ? 'secondary' : 'outline'}>
-                      {agent.is_active ? '활성' : '비활성'}
+                    <CardTitle className="text-lg">{activityStaff.name}</CardTitle>
+                    <Badge variant={activityStaff.is_active ? 'secondary' : 'outline'}>
+                      {activityStaff.is_active ? '활성' : '비활성'}
                     </Badge>
                   </div>
-                  <CardDescription>{agent.email}</CardDescription>
+                  <CardDescription>{activityStaff.email}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="text-sm text-gray-600">
-                      <strong>불가 날짜:</strong> {agent.unavailable_dates?.length || 0}개
+                      <strong>불가 날짜:</strong> {activityStaff.unavailable_dates?.length || 0}개
                     </div>
-                    {agent.unavailable_dates && agent.unavailable_dates.length > 0 && (
+                    {activityStaff.unavailable_dates && activityStaff.unavailable_dates.length > 0 && (
                       <div className="text-xs text-gray-500">
-                        {agent.unavailable_dates.slice(0, 3).join(', ')}
-                        {agent.unavailable_dates.length > 3 && ` 외 ${agent.unavailable_dates.length - 3}일`}
+                        {activityStaff.unavailable_dates.slice(0, 3).join(', ')}
+                        {activityStaff.unavailable_dates.length > 3 && ` 외 ${activityStaff.unavailable_dates.length - 3}일`}
                       </div>
                     )}
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setSelectedAgent(agent);
+                        setSelectedActivityStaff(activityStaff);
                         setIsAgentFormOpen(true);
                       }}
                       className="w-full"
@@ -829,7 +829,7 @@ export default function AgencySchedulesPage() {
               <SheetHeader>
                 <SheetTitle>에이전트 예약불가 날짜 관리</SheetTitle>
                 <SheetDescription>
-                  {selectedAgent ? `${selectedAgent.name} 에이전트의 예약불가 날짜를 관리합니다` : '에이전트를 선택해주세요'}
+                  {selectedActivityStaff ? `${selectedActivityStaff.name} 에이전트의 예약불가 날짜를 관리합니다` : '에이전트를 선택해주세요'}
                 </SheetDescription>
               </SheetHeader>
 
@@ -839,34 +839,34 @@ export default function AgencySchedulesPage() {
                   <label className="text-sm font-medium">에이전트 선택</label>
                   <select
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    value={selectedAgent?.id || ''}
+                    value={selectedActivityStaff?.id || ''}
                     onChange={(e) => {
-                      const agent = agents.find(a => a.id === e.target.value);
-                      setSelectedAgent(agent || null);
+                      const activityStaff = activityStaffs.find(a => a.id === e.target.value);
+                      setSelectedActivityStaff(activityStaff || null);
                     }}
                   >
                     <option value="">에이전트를 선택하세요</option>
-                    {agents.map(agent => (
-                      <option key={agent.id} value={agent.id}>
-                        {agent.name} ({agent.email})
+                    {activityStaffs.map(activityStaff => (
+                      <option key={activityStaff.id} value={activityStaff.id}>
+                        {activityStaff.name} ({activityStaff.email})
                       </option>
                     ))}
                   </select>
                 </div>
 
                 {/* 현재 불가 날짜 목록 */}
-                {selectedAgent && (
+                {selectedActivityStaff && (
                   <div className="space-y-3">
                     <label className="text-sm font-medium">현재 예약불가 날짜</label>
-                    {selectedAgent.unavailable_dates && selectedAgent.unavailable_dates.length > 0 ? (
+                    {selectedActivityStaff.unavailable_dates && selectedActivityStaff.unavailable_dates.length > 0 ? (
                       <div className="space-y-2 max-h-60 overflow-y-auto">
-                        {selectedAgent.unavailable_dates.map((date) => (
+                        {selectedActivityStaff.unavailable_dates.map((date) => (
                           <div key={date} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                             <span className="text-sm">{date}</span>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleRemoveAgentUnavailableDate(selectedAgent.id, date)}
+                              onClick={() => handleRemoveAgentUnavailableDate(selectedActivityStaff.id, date)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -880,36 +880,36 @@ export default function AgencySchedulesPage() {
                 )}
 
                 {/* 새 날짜 추가 */}
-                {selectedAgent && (
+                {selectedActivityStaff && (
                   <div className="space-y-3">
                     <label className="text-sm font-medium">새 예약불가 날짜 추가</label>
                     <div className="flex space-x-2">
                       <Input
                         type="date"
-                        id="new-agent-date"
+                        id="new-activityStaff-date"
                         className="flex-1"
                       />
                       <Button
                         onClick={async () => {
-                          const input = document.getElementById('new-agent-date') as HTMLInputElement;
+                          const input = document.getElementById('new-activityStaff-date') as HTMLInputElement;
                           if (!input?.value) {
                             toast({ title: '오류', description: '날짜를 선택해주세요.', variant: 'destructive' });
                             return;
                           }
 
-                          if (!selectedAgent) {
+                          if (!selectedActivityStaff) {
                             toast({ title: '오류', description: '에이전트를 선택해주세요.', variant: 'destructive' });
                             return;
                           }
 
-                          // 중복 체크 - 최신 agents 배열에서 확인
-                          const currentAgent = agents.find(a => a.id === selectedAgent.id);
+                          // 중복 체크 - 최신 activityStaffs 배열에서 확인
+                          const currentAgent = activityStaffs.find(a => a.id === selectedActivityStaff.id);
                           if (currentAgent?.unavailable_dates?.includes(input.value)) {
                             toast({ title: '오류', description: '이미 등록된 날짜입니다.', variant: 'destructive' });
                             return;
                           }
 
-                          await handleAddAgentUnavailableDate(selectedAgent.id, input.value);
+                          await handleAddAgentUnavailableDate(selectedActivityStaff.id, input.value);
                           input.value = '';
                         }}
                       >
@@ -927,9 +927,9 @@ export default function AgencySchedulesPage() {
   );
 
   // 에이전트 불가 날짜 추가
-  async function handleAddAgentUnavailableDate(agentId: string, date: string) {
+  async function handleAddAgentUnavailableDate(activityStaffId: string, date: string) {
     try {
-      const response = await fetch(`/api/agents/${agentId}/unavailable-dates`, {
+      const response = await fetch(`/api/activityStaffs/${activityStaffId}/unavailable-dates`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ date }),
@@ -938,18 +938,18 @@ export default function AgencySchedulesPage() {
       if (response.ok) {
         const result = await response.json();
 
-        // 즉시 agents 배열 업데이트
-        const updatedAgents = agents.map(agent =>
-          agent.id === agentId
-            ? { ...agent, unavailable_dates: result.data.unavailable_dates }
-            : agent
+        // 즉시 activityStaffs 배열 업데이트
+        const updatedActivityStaffs = activityStaffs.map(activityStaff =>
+          activityStaff.id === activityStaffId
+            ? { ...activityStaff, unavailable_dates: result.data.unavailable_dates }
+            : activityStaff
         );
-        setAgents(updatedAgents);
+        setActivityStaffs(updatedActivityStaffs);
 
-        // selectedAgent도 즉시 업데이트
-        if (selectedAgent && selectedAgent.id === agentId) {
-          setSelectedAgent({
-            ...selectedAgent,
+        // selectedActivityStaff도 즉시 업데이트
+        if (selectedActivityStaff && selectedActivityStaff.id === activityStaffId) {
+          setSelectedActivityStaff({
+            ...selectedActivityStaff,
             unavailable_dates: result.data.unavailable_dates
           });
         }
@@ -972,9 +972,9 @@ export default function AgencySchedulesPage() {
   }
 
   // 에이전트 불가 날짜 제거
-  async function handleRemoveAgentUnavailableDate(agentId: string, date: string) {
+  async function handleRemoveAgentUnavailableDate(activityStaffId: string, date: string) {
     try {
-      const response = await fetch(`/api/agents/${agentId}/unavailable-dates`, {
+      const response = await fetch(`/api/activityStaffs/${activityStaffId}/unavailable-dates`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ date }),
@@ -983,18 +983,18 @@ export default function AgencySchedulesPage() {
       if (response.ok) {
         const result = await response.json();
 
-        // 즉시 agents 배열 업데이트
-        const updatedAgents = agents.map(agent =>
-          agent.id === agentId
-            ? { ...agent, unavailable_dates: result.data.unavailable_dates }
-            : agent
+        // 즉시 activityStaffs 배열 업데이트
+        const updatedActivityStaffs = activityStaffs.map(activityStaff =>
+          activityStaff.id === activityStaffId
+            ? { ...activityStaff, unavailable_dates: result.data.unavailable_dates }
+            : activityStaff
         );
-        setAgents(updatedAgents);
+        setActivityStaffs(updatedActivityStaffs);
 
-        // selectedAgent도 즉시 업데이트
-        if (selectedAgent && selectedAgent.id === agentId) {
-          setSelectedAgent({
-            ...selectedAgent,
+        // selectedActivityStaff도 즉시 업데이트
+        if (selectedActivityStaff && selectedActivityStaff.id === activityStaffId) {
+          setSelectedActivityStaff({
+            ...selectedActivityStaff,
             unavailable_dates: result.data.unavailable_dates
           });
         }

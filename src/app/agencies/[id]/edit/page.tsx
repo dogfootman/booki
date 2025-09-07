@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { agenciesApi } from '@/features/agencies/api';
-import { agentsApi } from '@/features/agents/api';
+import { activityStaffApi } from '@/features/activity-staff/api';
 import { Agency, UpdateAgencyRequest } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -90,9 +90,9 @@ export default function EditAgencyPage({ params }: PageProps) {
 
   const loadAgentCount = async () => {
     try {
-      const agentsResponse = await agentsApi.getAgents({ agencyId });
-      if (agentsResponse.success && agentsResponse.data) {
-        setAgentCount(agentsResponse.data.length);
+      const activityStaffsResponse = await activityStaffApi.getActivityStaffs({ agencyId });
+      if (activityStaffsResponse.success && activityStaffsResponse.data) {
+        setAgentCount(activityStaffsResponse.data.length);
       }
     } catch (error) {
       console.warn('Failed to load agent count:', error);
@@ -159,11 +159,11 @@ export default function EditAgencyPage({ params }: PageProps) {
     
     try {
       // 먼저 해당 에이전시에 속한 에이전트들을 확인
-      const agentsResponse = await agentsApi.getAgents({ agencyId });
+      const activityStaffsResponse = await activityStaffApi.getActivityStaffs({ agencyId });
       
-      if (agentsResponse.success && agentsResponse.data && agentsResponse.data.length > 0) {
-        const agentCount = agentsResponse.data.length;
-        const agentNames = agentsResponse.data.map(agent => agent.name).join(', ');
+      if (activityStaffsResponse.success && activityStaffsResponse.data && activityStaffsResponse.data.length > 0) {
+        const agentCount = activityStaffsResponse.data.length;
+        const agentNames = activityStaffsResponse.data.map(agent => agent.name).join(', ');
         
         toast({
           title: '삭제 불가',

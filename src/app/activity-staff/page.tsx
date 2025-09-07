@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { agentsApi } from '@/features/agents/api';
-import { Agent } from '@/types/agent';
+import { activityStaffApi } from '@/features/activity-staff/api';
+import { ActivityStaff } from '@/types/activity-staff';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,37 +14,37 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, Users, Mail, Phone, Clock, DollarSign, UserPlus, Edit, Trash2 } from 'lucide-react';
 import { AdminOrAgencyManager } from '@/components/auth/RoleGuard';
 
-export default function AgentsPage() {
+export default function ActivityStaffPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [activityStaffs, setActivityStaffs] = useState<ActivityStaff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState<boolean | null>(null);
 
-  // 에이전트 목록 로드
+  // 액티비티 스태프 목록 로드
   useEffect(() => {
-    loadAgents();
+    loadActivityStaffs();
   }, [searchTerm, filterActive]);
 
-  const loadAgents = async () => {
+  const loadActivityStaffs = async () => {
     try {
       setIsLoading(true);
-      const response = await agentsApi.getAgents({
+      const response = await activityStaffApi.getActivityStaffs({
         search: searchTerm || undefined,
         is_active: filterActive,
       });
       
       if (response.success && response.data) {
-        setAgents(response.data);
+        setActivityStaffs(response.data);
       } else {
-        throw new Error(response.error || '에이전트 목록을 불러오는데 실패했습니다.');
+        throw new Error(response.error || '액티비티 스태프 목록을 불러오는데 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to load agents:', error);
+      console.error('Failed to load activity staffs:', error);
       toast({
         title: '에러',
-        description: error instanceof Error ? error.message : '에이전트 목록을 불러오는데 실패했습니다.',
+        description: error instanceof Error ? error.message : '액티비티 스태프 목록을 불러오는데 실패했습니다.',
         variant: 'destructive',
       });
     } finally {
@@ -66,28 +66,28 @@ export default function AgentsPage() {
     }
   };
 
-  const handleDeleteAgent = async (agentId: string, agentName: string) => {
-    if (!confirm(`정말로 "${agentName}" 에이전트를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+  const handleDeleteActivityStaff = async (activityStaffId: string, activityStaffName: string) => {
+    if (!confirm(`정말로 "${activityStaffName}" 액티비티 스태프를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
       return;
     }
 
     try {
-      const response = await agentsApi.deleteAgent(agentId);
+      const response = await activityStaffApi.deleteActivityStaff(activityStaffId);
       
       if (response.success) {
         toast({
           title: '성공',
-          description: '에이전트가 성공적으로 삭제되었습니다.',
+          description: '액티비티 스태프가 성공적으로 삭제되었습니다.',
         });
-        loadAgents(); // 목록 새로고침
+        loadActivityStaffs(); // 목록 새로고침
       } else {
-        throw new Error(response.error || '에이전트 삭제에 실패했습니다.');
+        throw new Error(response.error || '액티비티 스태프 삭제에 실패했습니다.');
       }
     } catch (error) {
-      console.error('Failed to delete agent:', error);
+      console.error('Failed to delete activity staff:', error);
       toast({
         title: '에러',
-        description: error instanceof Error ? error.message : '에이전트 삭제에 실패했습니다.',
+        description: error instanceof Error ? error.message : '액티비티 스태프 삭제에 실패했습니다.',
         variant: 'destructive',
       });
     }
@@ -109,18 +109,18 @@ export default function AgentsPage() {
         <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">에이전트 관리</h1>
+            <h1 className="text-3xl font-bold text-gray-900">액티비티 스태프 관리</h1>
             <p className="text-gray-600 mt-2">
               투어 가이드 및 스태프 정보를 관리하세요
             </p>
           </div>
           <Button 
-            onClick={() => router.push('/agents/new')}
+            onClick={() => router.push('/activity-staff/new')}
             size="lg"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 shadow-lg"
           >
             <UserPlus className="w-5 h-5 mr-2" />
-            새 에이전트 등록
+            새 스태프 등록
           </Button>
         </div>
 
@@ -132,7 +132,7 @@ export default function AgentsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 id="search"
-                placeholder="에이전트 이름 또는 이메일로 검색..."
+                placeholder="스태프 이름 또는 이메일로 검색..."
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="pl-10"
@@ -162,19 +162,19 @@ export default function AgentsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-blue-900">빠른 액션</h3>
-              <p className="text-blue-700 text-sm">새로운 에이전트를 등록하거나 관리 작업을 수행하세요</p>
+              <p className="text-blue-700 text-sm">새로운 액티비티 스태프를 등록하거나 관리 작업을 수행하세요</p>
             </div>
             <div className="flex gap-3">
               <Button 
-                onClick={() => router.push('/agents/new')}
+                onClick={() => router.push('/activity-staff/new')}
                 variant="outline"
                 className="border-blue-300 text-blue-700 hover:bg-blue-100"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                에이전트 등록
+                스태프 등록
               </Button>
               <Button 
-                onClick={() => router.push('/agents/new')}
+                onClick={() => router.push('/activity-staff/new')}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
@@ -185,27 +185,27 @@ export default function AgentsPage() {
         </div>
       </div>
 
-      {/* 에이전트 목록 */}
+      {/* 액티비티 스태프 목록 */}
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
-      ) : agents.length === 0 ? (
+      ) : activityStaffs.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">등록된 에이전트가 없습니다</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">등록된 액티비티 스태프가 없습니다</h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm || filterActive !== null ? '검색 조건에 맞는 에이전트가 없습니다.' : '첫 번째 에이전트를 등록해보세요.'}
+              {searchTerm || filterActive !== null ? '검색 조건에 맞는 스태프가 없습니다.' : '첫 번째 액티비티 스태프를 등록해보세요.'}
             </p>
             {!searchTerm && filterActive === null && (
               <Button 
-                onClick={() => router.push('/agents/new')}
+                onClick={() => router.push('/activity-staff/new')}
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
-                첫 번째 에이전트 등록하기
+                첫 번째 스태프 등록하기
               </Button>
             )}
           </CardContent>
@@ -213,63 +213,63 @@ export default function AgentsPage() {
       ) : (
         <>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {agents.map((agent) => (
-              <Card key={agent.id} className="hover:shadow-lg transition-shadow">
+            {activityStaffs.map((activityStaff) => (
+              <Card key={activityStaff.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-12 h-12">
-                        <AvatarImage src={agent.avatar_url} alt={agent.name} />
+                        <AvatarImage src={activityStaff.avatar_url} alt={activityStaff.name} />
                         <AvatarFallback className="bg-blue-100 text-blue-600">
-                          {getInitials(agent.name)}
+                          {getInitials(activityStaff.name)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <CardTitle className="text-lg">{agent.name}</CardTitle>
+                        <CardTitle className="text-lg">{activityStaff.name}</CardTitle>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Mail className="w-3 h-3" />
-                          {agent.email}
+                          {activityStaff.email}
                         </div>
                       </div>
                     </div>
-                    <Badge variant={agent.is_active ? 'default' : 'secondary'}>
-                      {agent.is_active ? '활성' : '비활성'}
+                    <Badge variant={activityStaff.is_active ? 'default' : 'secondary'}>
+                      {activityStaff.is_active ? '활성' : '비활성'}
                     </Badge>
                   </div>
                 </CardHeader>
                 
                 <CardContent className="space-y-4">
-                  {agent.phone && (
+                  {activityStaff.phone && (
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Phone className="w-3 h-3" />
-                      {agent.phone}
+                      {activityStaff.phone}
                     </div>
                   )}
                   
-                  {agent.bio && (
+                  {activityStaff.bio && (
                     <p className="text-sm text-gray-600 line-clamp-2">
-                      {agent.bio}
+                      {activityStaff.bio}
                     </p>
                   )}
                   
                   <div className="flex items-center gap-4 text-sm text-gray-600">
-                    {agent.hourly_rate && (
+                    {activityStaff.hourly_rate && (
                       <div className="flex items-center gap-1">
                         <DollarSign className="w-3 h-3" />
-                        {agent.hourly_rate}/hr
+                        {activityStaff.hourly_rate}/hr
                       </div>
                     )}
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {agent.max_hours_per_day}h/day
+                      {activityStaff.max_hours_per_day}h/day
                     </div>
                   </div>
                   
-                  {agent.languages.length > 0 && (
+                  {activityStaff.languages.length > 0 && (
                     <div className="space-y-2">
                       <Label className="text-xs font-medium text-gray-500">언어</Label>
                       <div className="flex flex-wrap gap-1">
-                        {agent.languages.map((language) => (
+                        {activityStaff.languages.map((language) => (
                           <Badge key={language} variant="outline" className="text-xs">
                             {language}
                           </Badge>
@@ -278,11 +278,11 @@ export default function AgentsPage() {
                     </div>
                   )}
                   
-                  {agent.specialties.length > 0 && (
+                  {activityStaff.specialties.length > 0 && (
                     <div className="space-y-2">
                       <Label className="text-xs font-medium text-gray-500">전문 분야</Label>
                       <div className="flex flex-wrap gap-1">
-                        {agent.specialties.map((specialty) => (
+                        {activityStaff.specialties.map((specialty) => (
                           <Badge key={specialty} variant="outline" className="text-xs">
                             {specialty}
                           </Badge>
@@ -296,7 +296,7 @@ export default function AgentsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => router.push(`/agents/${agent.id}/edit`)}
+                      onClick={() => router.push(`/activity-staff/${activityStaff.id}/edit`)}
                     >
                       <Edit className="w-3 h-3 mr-1" />
                       수정
@@ -304,7 +304,7 @@ export default function AgentsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDeleteAgent(agent.id, agent.name)}
+                      onClick={() => handleDeleteActivityStaff(activityStaff.id, activityStaff.name)}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="w-3 h-3 mr-1" />
@@ -319,16 +319,16 @@ export default function AgentsPage() {
           {/* 하단 추가 생성 버튼 */}
           <div className="mt-8 text-center">
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">더 많은 에이전트가 필요하신가요?</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">더 많은 스태프가 필요하신가요?</h3>
               <p className="text-gray-600 mb-4">새로운 투어 가이드나 스태프를 추가로 등록하세요</p>
               <Button 
-                onClick={() => router.push('/agents/new')}
+                onClick={() => router.push('/activity-staff/new')}
                 size="lg"
                 variant="outline"
                 className="border-blue-300 text-blue-700 hover:bg-blue-50"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
-                추가 에이전트 등록
+                추가 스태프 등록
               </Button>
             </div>
           </div>
